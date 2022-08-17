@@ -43,7 +43,7 @@ extern "C" EXPORT void getLibInfo(Plugin::LibraryInfo* info)
 	info->apiVersion = PLUGIN_API_VER;
 
 	//Name of the Library, used only for information
-	info->name = "PLUGINLIBRARYNAME";
+	info->name = "TTL Debug Tools";
 
 	//Version of the library, used only for information
 	info->libVersion = 1;
@@ -54,8 +54,23 @@ extern "C" EXPORT int getPluginInfo(int index, Plugin::PluginInfo* info)
 {
 	switch (index)
 	{
-		//one case per plugin. This example is for a processor which connects directly to the signal chain
+		//one case per plugin.
 	case 0:
+		// Sources, sinks, and visualizers are all "processors".
+		info->type = PluginType::PLUGIN_TYPE_PROCESSOR;
+
+		//Processor name shown in the GUI.
+		info->processor.name = "TTL Toggle Panel";
+
+		//Type of processor.
+		info->processor.type = ProcessorType::SourceProcessor;
+
+		//Class factory pointer. Namespace and class name.
+		info->processor.creator = &(Plugin::createProcessor<TTLDebugTools::TTLTogglePanel>);
+		break;
+
+// FIXME - Examples follow.
+#if 0
 		//Type of plugin. See "Source/Processors/PluginManager/OpenEphysPlugin.h" for complete info about the different type structures
 		info->type = PluginType::PLUGIN_TYPE_PROCESSOR;
 
@@ -91,6 +106,8 @@ extern "C" EXPORT int getPluginInfo(int index, Plugin::PluginInfo* info)
 		info->fileSource.extensions = "xxx;xxx;xxx"; //Semicolon separated list of supported extensions. Eg: "txt;dat;info;kwd"
 		info->fileSource.creator = &(Plugin::createFileSource<FileSourceClassName>);
 		**/
+// End of examples.
+#endif
 
 	default:
 		return -1;
