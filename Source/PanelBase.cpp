@@ -1,3 +1,4 @@
+#include "PanelBaseEditor.h"
 #include "PanelBase.h"
 
 using namespace TTLDebugTools;
@@ -8,7 +9,7 @@ using namespace TTLDebugTools;
 
 
 // Constructor.
-TTLPanelBase::TTLPanelBase(const string &name, bool wantSource) : GenericProcessor(name)
+TTLPanelBase::TTLPanelBase(const std::string &name, bool wantSource) : GenericProcessor(name)
 {
     isSource = wantSource;
 
@@ -75,9 +76,9 @@ void TTLPanelBase::setParameter(int parameterIndex, float newValue)
 
 
 // XML configuration saving.
-void TTLPanelBase::saveCustomParametersToXML(XmlElement* parentElement)
+void TTLPanelBase::saveCustomParametersToXml(XmlElement* parentElement)
 {
-    if isSource
+    if (isSource)
       parentElement->setAttribute("Type", "TTLTogglePanel");
     else
       parentElement->setAttribute("Type", "TTLFrontPanel");
@@ -148,7 +149,7 @@ TTLTogglePanel::TTLTogglePanel() : TTLPanelBase("TTL Toggle Panel", true)
 {
 }
 
-TTLPanelBase::~TTLPanelBase()
+TTLTogglePanel::~TTLTogglePanel()
 {
 }
 
@@ -159,7 +160,7 @@ TTLFrontPanel::TTLFrontPanel() : TTLPanelBase("TTL Front Panel", false)
 {
 }
 
-TTLPanelBase::~TTLPanelBase()
+TTLFrontPanel::~TTLFrontPanel()
 {
 }
 

@@ -20,7 +20,7 @@ namespace TTLDebugTools
 	public:
 		// Constructor and destructor.
 		// Set "wantSource" true to make this a toggle panel (source), or false for a front panel (sink).
-		TTLPanelBase(const string &name, bool wantSource);
+		TTLPanelBase(const std::string &name, bool wantSource);
 		~TTLPanelBase();
 
 		// We do have a custom editor.
@@ -41,8 +41,8 @@ namespace TTLDebugTools
 		void setParameter(int parameterIndex, float newValue) override;
 
 		// XML configuration hooks.
-		void saveCustomParametersToXml(XmlElement* parentElement) override;
-		void loadCustomParametersFromXml(XmlElement* parentElement) override;
+		void saveCustomParametersToXml(XmlElement* parentElement);
+		void loadCustomParametersFromXml(XmlElement* parentElement);
 
 
 		// Accessors for querying and modifying state.
@@ -66,7 +66,7 @@ namespace TTLDebugTools
 	public:
 		TTLTogglePanel();
 		~TTLTogglePanel();
-	}
+	};
 
 
 	class TTLFrontPanel : public TTLPanelBase
@@ -74,7 +74,7 @@ namespace TTLDebugTools
 	public:
 		TTLFrontPanel();
 		~TTLFrontPanel();
-	}
+	};
 }
 
 #endif

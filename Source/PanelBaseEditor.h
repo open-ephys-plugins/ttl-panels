@@ -21,6 +21,7 @@ namespace TTLDebugTools
 		~TTLPanelEditorRow();
 
 		// GUI callbacks.
+		void buttonClicked(Button* theButton);
 		void labelTextChanged(Label* theLabel);
 
 		// Accessors.
@@ -38,12 +39,12 @@ namespace TTLDebugTools
 
 
 	// GUI tray holding a small number of TTL banks.
-	class TTLPanelBaseEditor : public genericEditor
+	class TTLPanelBaseEditor : public GenericEditor
 	{
 	public:
 		// Constructor and destructor.
-		TTLPanelEditor(TTLPanelBase* newParent);
-		~TTLPanelEditor();
+		TTLPanelBaseEditor(TTLPanelBase* newParent);
+		~TTLPanelBaseEditor();
 
 		// Accessors.
 		// NOTE - This queries the parent one bit at a time, which may be expensive.

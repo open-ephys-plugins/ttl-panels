@@ -43,7 +43,7 @@ TTLPanelEditorRow::TTLPanelEditorRow(TTLPanelBase* newParent, int newBankIdx)
     bitButtons.clear();
     for (int bidx = 0; bidx < TTLDEBUG_PANEL_BANK_BITS; bidx++)
     {
-        UtilityButton* btn = new UtilityButton( to_string(bitnum + bidx), Font("Small Text", 13, Font::plain) );
+        UtilityButton* btn = new UtilityButton( std::to_string(bitnum + bidx), Font("Small Text", 13, Font::plain) );
         btn->setRadius(3.0f);
         btn->setBounds(bitxpos, BUTTONROW_YHALO, BITBUTTON_XSIZE, BUTTONROW_YSIZE);
         btn->addListener(this);
@@ -83,6 +83,12 @@ TTLPanelEditorRow::~TTLPanelEditorRow()
 
 // GUI callbacks.
 
+void TTLPanelEditorRow::buttonClicked(Button* theButton)
+{
+// FIXME - NYI.
+}
+
+
 void TTLPanelEditorRow::labelTextChanged(Label* theLabel)
 {
 // FIXME - NYI.
@@ -102,9 +108,9 @@ void TTLPanelEditorRow::refreshDisplay()
 // GUI tray holding a small number of TTL banks.
 
 // Constructor.
-TTLPanelEditor::TTLPanelEditor(TTLPanelBase* newParent)
+TTLPanelBaseEditor::TTLPanelBaseEditor(TTLPanelBase* newParent) : GenericEditor(newParent, true)
 {
-    parent = newparent;
+    parent = newParent;
 
     banks.clear();
 
@@ -119,7 +125,9 @@ TTLPanelEditor::TTLPanelEditor(TTLPanelBase* newParent)
 
         xpos = BUTTONROW_XHALO + xpos * BUTTONROW_XPITCH;
         ypos = BUTTONROW_YHALO + ypos * BUTTONROW_YPITCH;
-        thisrow.setBounds(xpos, ypos, BUTTONROW_XSIZE, BUTTONROW_YSIZE);
+        thisrow->setBounds(xpos, ypos, BUTTONROW_XSIZE, BUTTONROW_YSIZE);
+
+        banks.add(thisrow);
     }
 
     desiredWidth = TTLDEBUG_PANEL_UI_MAX_COLS * BUTTONROW_XPITCH;
@@ -127,14 +135,14 @@ TTLPanelEditor::TTLPanelEditor(TTLPanelBase* newParent)
 
 
 // Destructor.
-TTLPanelEditor::~TTLPanelEditor()
+TTLPanelBaseEditor::~TTLPanelBaseEditor()
 {
 }
 
 
 // State refresh accessor.
 // NOTE - This queries the parent one bit at a time, which may be expensive.
-void TTLPanelEditor::updateAllBanks()
+void TTLPanelBaseEditor::updateAllBanks()
 {
 // FIXME - NYI.
 }
