@@ -11,6 +11,15 @@ using namespace TTLDebugTools;
 TTLPanelBase::TTLPanelBase(const string &name, bool wantSource) : GenericProcessor(name)
 {
     isSource = wantSource;
+
+    bankEnabled.clear();
+    bankEnabled.insertMultiple(0, false, TTLDEBUG_PANEL_MAX_BANKS);
+
+    needUpdate.clear();
+    needUpdate.insertMultiple(0, true, TTLDEBUG_PANEL_TOTAL_BITS);
+
+    bitValue.clear();
+    bitValue.insertMultiple(0, false, TTLDEBUG_PANEL_TOTAL_BITS);
 }
 
 
@@ -97,7 +106,7 @@ bool TTLPanelBase::getBitValue(int bitNum)
 {
   bool result = false;
 
-  if ((bitNum >= 0) && (bitNum < TTLDEBUG_TOTAL_BITS))
+  if ((bitNum >= 0) && (bitNum < TTLDEBUG_PANEL_TOTAL_BITS))
     result = bitValue[bitNum];
 
   return result;
@@ -106,8 +115,8 @@ bool TTLPanelBase::getBitValue(int bitNum)
 
 void TTLPanelBase::setBitValue(int bitNum, bool newState)
 {
-  if ((bitNum >= 0) && (bitNum < TTLDEBUG_TOTAL_BITS))
-    setParameter( TTLDEBUG_PARAM_BASE_OUTPUT + bitNum, (newState ? 1 : -1) );
+  if ((bitNum >= 0) && (bitNum < TTLDEBUG_PANEL_TOTAL_BITS))
+    setParameter( TTLDEBUG_PANEL_PARAM_BASE_OUTPUT + bitNum, (newState ? 1 : -1) );
 }
 
 
@@ -115,7 +124,7 @@ bool TTLPanelBase::isBankEnabled(int bankNum)
 {
   bool result = false;
 
-  if ((bankNum >= 0) && (bankNum < TTLDEBUG_MAX_BANKS))
+  if ((bankNum >= 0) && (bankNum < TTLDEBUG_PANEL_MAX_BANKS))
     result = bankEnabled[bankNum];
 
   return result;
@@ -124,8 +133,8 @@ bool TTLPanelBase::isBankEnabled(int bankNum)
 
 void TTLPanelBase::setBankEnabled(int bankNum, bool wantEnabled)
 {
-  if ((bankNum >= 0) && (bankNum < TTLDEBUG_MAX_BANKS))
-    setParameter( TTLDEBUG_PARAM_BASE_ENABLED + bankNum, (wantEnabled ? 1 : -1) );
+  if ((bankNum >= 0) && (bankNum < TTLDEBUG_PANEL_MAX_BANKS))
+    setParameter( TTLDEBUG_PANEL_PARAM_BASE_ENABLED + bankNum, (wantEnabled ? 1 : -1) );
 }
 
 
