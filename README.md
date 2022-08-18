@@ -17,11 +17,11 @@ to be viewed on a strip-chart.
 
 ## Limitations:
 
-* The minimized versions of the toggle panel and front panel show only a
-small number of TTL channels (16).
+* The toggle panel and front panel are not visualizers; they're limited to
+a small number of channels (32), to allow display in the plugin bar.
 
-* The pattern generator only supports up to 64 outputs, due to internally
-storing output state as a uint64_t integer.
+* **(NYI)** The pattern generator only supports up to 64 outputs, due to
+internally storing output state as a uint64_t integer.
 
 
 
