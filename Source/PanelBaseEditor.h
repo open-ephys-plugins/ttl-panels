@@ -35,6 +35,8 @@ namespace TTLDebugTools
 		OwnedArray<UtilityButton> bitButtons;
 		ScopedPointer<UtilityButton> enableButton;
 		ScopedPointer<Label> hexLabel, decLabel;
+
+		JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(TTLPanelEditorRow);
 	};
 
 
@@ -46,6 +48,9 @@ namespace TTLDebugTools
 		TTLPanelBaseEditor(TTLPanelBase* newParent);
 		~TTLPanelBaseEditor();
 
+		// Plugin hooks.
+		void updateSettings() override;
+
 		// Accessors.
 		// NOTE - This queries the parent one bit at a time, which may be expensive.
 		void updateAllBanks();
@@ -53,6 +58,8 @@ namespace TTLDebugTools
 	private:
 		TTLPanelBase* parent;
 		OwnedArray<TTLPanelEditorRow> banks;
+
+		JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(TTLPanelBaseEditor);
 	};
 
 

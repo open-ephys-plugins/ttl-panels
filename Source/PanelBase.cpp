@@ -3,6 +3,16 @@
 
 using namespace TTLDebugTools;
 
+// Diagnostic tattle macros.
+#define TTLTATTLE
+#ifdef TTLTATTLE
+#define T_DEBUG(x) do { x } while(false);
+#else
+#define T_DEBUG(x) {}
+#endif
+// Flushing should already happen with std::endl, but force it anyways.
+#define T_PRINT(x) T_DEBUG(std::cout << "[PanelBase]  " << x << std::endl << std::flush;)
+
 
 //
 // Base class for front panel and toggle panel.
@@ -11,7 +21,8 @@ using namespace TTLDebugTools;
 // Constructor.
 TTLPanelBase::TTLPanelBase(const std::string &name, bool wantSource) : GenericProcessor(name)
 {
-    isSource = wantSource;
+    isTTLSource = wantSource;
+T_PRINT("Constructor called.");
 
     bankEnabled.clear();
     bankEnabled.insertMultiple(0, false, TTLDEBUG_PANEL_MAX_BANKS);
@@ -33,18 +44,56 @@ TTLPanelBase::~TTLPanelBase()
 // Editor accessor.
 AudioProcessorEditor* TTLPanelBase::createEditor()
 {
+T_PRINT("Creating editor.");
     return new TTLPanelBaseEditor(this);
 }
 
 
+// Role accessors.
+#if 0
+
+bool TTLPanelBase::isSource()
+{
+T_PRINT( "isSource() returning " << (isTTLSource ? "true." : "false.") );
+	return isTTLSource;
+}
+
+
+bool TTLPanelBase::isSink()
+{
+T_PRINT( "isSink() returning " << (~isTTLSource ? "true." : "false.") );
+	return !isTTLSource;
+}
+#endif
+
+
 // Rebuild external configuration information.
+// NOTE - We're making event channels here, not in createEventChannels().
 void TTLPanelBase::updateSettings()
 {
     // Enumerate channels here.
     // If we're a source, enumerate outputs based on which banks are enabled.
     // If we're a sink, enable banks based on how many inputs we have.
 
+T_PRINT("updateSettings() called.");
 // FIXME - NYI.
+}
+
+
+// We still need createEventChannels() as a hook.
+void TTLPanelBase::createEventChannels()
+{
+T_PRINT("createEventChannels() called.");
+// FIXME - NYI.
+}
+
+
+// Initialization.
+bool TTLPanelBase::enable()
+{
+T_PRINT("enable() called.");
+    // Nothing to do.
+    return true;
 }
 
 
@@ -54,6 +103,7 @@ void TTLPanelBase::process(AudioSampleBuffer& buffer)
     // If we're a source, report queued changes to TTL output state.
     // If we're a sink, input events will be received via handleEvent().
 
+T_PRINT("process() called.");
 // FIXME - NYI.
 }
 
@@ -63,6 +113,7 @@ void TTLPanelBase::handleEvent(const EventChannel* eventInfo, const MidiMessage&
 {
    // If we're a sink, look for TTL events here.
 
+T_PRINT("handleEvent() called.");
 // FIXME - NYI.
 }
 
@@ -72,13 +123,15 @@ void TTLPanelBase::handleEvent(const EventChannel* eventInfo, const MidiMessage&
 void TTLPanelBase::setParameter(int parameterIndex, float newValue)
 {
 // FIXME - NYI.
+T_PRINT( "setParameter() called setting " << parameterIndex << " to: " << newValue );
 }
 
 
 // XML configuration saving.
 void TTLPanelBase::saveCustomParametersToXml(XmlElement* parentElement)
 {
-    if (isSource)
+T_PRINT("saveCustomParametersToXml() called.");
+    if (isTTLSource)
       parentElement->setAttribute("Type", "TTLTogglePanel");
     else
       parentElement->setAttribute("Type", "TTLFrontPanel");
@@ -89,6 +142,7 @@ void TTLPanelBase::saveCustomParametersToXml(XmlElement* parentElement)
 // XML configuration loading.
 void TTLPanelBase::loadCustomParametersFromXml(XmlElement* parentElement)
 {
+T_PRINT("loadCustomParametersFromXml() called.");
 // FIXME - NYI.
 }
 
@@ -97,9 +151,10 @@ void TTLPanelBase::loadCustomParametersFromXml(XmlElement* parentElement)
 // Modifying is done via setParameter, since that's guaranteed safe.
 
 
-bool TTLPanelBase::isEventSource()
+bool TTLPanelBase::isEventSourcePanel()
 {
-    return isSource;
+T_PRINT( "isEventSourcePanel() returning " << (isTTLSource ? "true." : "false.") );
+    return isTTLSource;
 }
 
 

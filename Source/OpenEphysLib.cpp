@@ -57,22 +57,22 @@ extern "C" EXPORT int getPluginInfo(int index, Plugin::PluginInfo* info)
 		//one case per plugin.
 	case 0:
 		// Sources, sinks, and visualizers are all "processors".
-		info->type = Plugin::PLUGIN_TYPE_PROCESSOR;
+		info->type = PluginType::PLUGIN_TYPE_PROCESSOR;
 		//Processor name shown in the GUI.
 		info->processor.name = "TTL Toggle Panel";
 		//Type of processor.
-		info->processor.type = Plugin::SourceProcessor;
+		info->processor.type = ProcessorType::SourceProcessor;
 		//Class factory pointer. Namespace and class name.
 		info->processor.creator = &(Plugin::createProcessor<TTLDebugTools::TTLTogglePanel>);
 		break;
 
 	case 1:
 		// Sources, sinks, and visualizers are all "processors".
-		info->type = Plugin::PLUGIN_TYPE_PROCESSOR;
+		info->type = PluginType::PLUGIN_TYPE_PROCESSOR;
 		//Processor name shown in the GUI.
 		info->processor.name = "TTL Front Panel";
 		//Type of processor.
-		info->processor.type = Plugin::SinkProcessor;
+		info->processor.type = ProcessorType::SinkProcessor;
 		//Class factory pointer. Namespace and class name.
 		info->processor.creator = &(Plugin::createProcessor<TTLDebugTools::TTLFrontPanel>);
 		break;

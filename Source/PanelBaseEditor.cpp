@@ -26,6 +26,16 @@ using namespace TTLDebugTools;
 #define BUTTONROW_XPITCH (BUTTONROW_XSIZE + BUTTONROW_XHALO + BUTTONROW_XHALO)
 
 
+// Diagnostic tattle macros.
+#define TTLEDITTATTLE
+#ifdef TTLEDITTATTLE
+#define T_DEBUG(x) do { x } while(false);
+#else
+#define T_DEBUG(x) {}
+#endif
+// Flushing should already happen with std::endl, but force it anyways.
+#define T_PRINT(x) T_DEBUG(std::cout << "[PanelBaseEditor]  " << x << std::endl << std::flush;)
+
 
 //
 // One bank of TTLs with associated controls.
@@ -34,6 +44,7 @@ using namespace TTLDebugTools;
 // Constructor.
 TTLPanelEditorRow::TTLPanelEditorRow(TTLPanelBase* newParent, int newBankIdx)
 {
+T_PRINT( "Making editor row " << newBankIdx << "." );
     parent = newParent;
     bankIdx = newBankIdx;
 
@@ -72,6 +83,7 @@ TTLPanelEditorRow::TTLPanelEditorRow(TTLPanelBase* newParent, int newBankIdx)
     decLabel->setBounds(labelxpos, BUTTONROW_YHALO, NUMLABEL_XSIZE, BUTTONROW_YSIZE);
     decLabel->addListener(this);
     addAndMakeVisible(decLabel);
+T_PRINT( "Finished making editor row " << newBankIdx << "." );
 }
 
 
@@ -111,11 +123,13 @@ void TTLPanelEditorRow::refreshDisplay()
 TTLPanelBaseEditor::TTLPanelBaseEditor(TTLPanelBase* newParent) : GenericEditor(newParent, true)
 {
     parent = newParent;
+T_PRINT("Editor constructor called.");
 
     banks.clear();
 
     for (int bidx = 0; bidx < TTLDEBUG_PANEL_MAX_BANKS; bidx++)
     {
+#if 0
         TTLPanelEditorRow* thisrow = new TTLPanelEditorRow(parent, bidx);
 
         // Least significant bank is on the lower right.
@@ -128,15 +142,26 @@ TTLPanelBaseEditor::TTLPanelBaseEditor(TTLPanelBase* newParent) : GenericEditor(
         thisrow->setBounds(xpos, ypos, BUTTONROW_XSIZE, BUTTONROW_YSIZE);
 
         banks.add(thisrow);
+#endif
     }
 
-    desiredWidth = TTLDEBUG_PANEL_UI_MAX_COLS * BUTTONROW_XPITCH;
+//    desiredWidth = TTLDEBUG_PANEL_UI_MAX_COLS * BUTTONROW_XPITCH;
+    setDesiredWidth(TTLDEBUG_PANEL_UI_MAX_COLS * BUTTONROW_XPITCH);
+T_PRINT("Editor constructor finished.");
 }
 
 
 // Destructor.
 TTLPanelBaseEditor::~TTLPanelBaseEditor()
 {
+}
+
+
+// Plugin update hook.
+void TTLPanelBaseEditor::updateSettings()
+{
+T_PRINT("Editor updateSettings() called.");
+    // Nothing to do.
 }
 
 

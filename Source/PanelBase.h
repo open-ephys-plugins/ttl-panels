@@ -27,8 +27,24 @@ namespace TTLDebugTools
 		bool hasEditor() const { return true; }
 		AudioProcessorEditor* createEditor() override;
 
+#if 0
+		// These need to be overridden for non-filters.
+		bool isFilter() const { return false; }
+		bool isSource();
+		bool isSink();
+		bool isSplitter() const { return false; }
+		bool isMerger() const { return false; }
+#endif
+
 		// Rebuild external configuration information.
+		// NOTE - We're making event channels here, not in createEventChannels().
 		void updateSettings() override;
+
+		// We still need createEventChannels() as a hook.
+		void createEventChannels() override;
+
+		// Initialization.
+		bool enable() override;
 
 		// Processing loop.
 		void process(AudioSampleBuffer& buffer) override;
@@ -47,17 +63,20 @@ namespace TTLDebugTools
 
 		// Accessors for querying and modifying state.
 		// Modifying is done via setParameter, since that's guaranteed safe.
-		bool isEventSource();
+		bool isEventSourcePanel();
 		bool getBitValue(int bitNum);
 		void setBitValue(int bitNum, bool newState);
 		bool isBankEnabled(int bankNum);
 		void setBankEnabled(int bankNum, bool wantEnabled);
 
 	protected:
-		bool isSource;
+		bool isTTLSource;
 		Array<bool> bankEnabled;
 		Array<bool> needUpdate;
 		Array<bool> bitValue;
+
+	private:
+		JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(TTLPanelBase);
 	};
 
 
@@ -66,6 +85,8 @@ namespace TTLDebugTools
 	public:
 		TTLTogglePanel();
 		~TTLTogglePanel();
+	private:
+		JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(TTLTogglePanel);
 	};
 
 
@@ -74,6 +95,8 @@ namespace TTLDebugTools
 	public:
 		TTLFrontPanel();
 		~TTLFrontPanel();
+	private:
+		JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(TTLFrontPanel);
 	};
 }
 
