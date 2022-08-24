@@ -6,6 +6,8 @@ using namespace TTLDebugTools;
 
 // Private magic constants for GUI geometry.
 
+#define TITLEBAR_YOFFSET 30
+
 #define BUTTONROW_YSIZE 16
 #define BUTTONROW_YHALO 2
 #define BUTTONROW_YPITCH (BUTTONROW_YSIZE + BUTTONROW_YHALO + BUTTONROW_YHALO)
@@ -56,7 +58,8 @@ T_PRINT( "Making editor row " << newBankIdx << "." );
     {
         UtilityButton* btn = new UtilityButton( std::to_string(bitnum + bidx), Font("Small Text", 13, Font::plain) );
         btn->setRadius(3.0f);
-        btn->setBounds(bitxpos, BUTTONROW_YHALO, BITBUTTON_XSIZE, BUTTONROW_YSIZE);
+        // Most significant on the left, least significant on the right.
+        btn->setBounds(bitxpos + ((TTLDEBUG_PANEL_BANK_BITS - 1) - bidx) * BITBUTTON_XPITCH, BUTTONROW_YHALO, BITBUTTON_XSIZE, BUTTONROW_YSIZE);
         btn->addListener(this);
         addAndMakeVisible(btn);
         bitButtons.add(btn);
@@ -124,12 +127,12 @@ TTLPanelBaseEditor::TTLPanelBaseEditor(TTLPanelBase* newParent) : GenericEditor(
 {
     parent = newParent;
 T_PRINT("Editor constructor called.");
+//T_PRINT("Using parent: " << parent);
 
     banks.clear();
 
     for (int bidx = 0; bidx < TTLDEBUG_PANEL_MAX_BANKS; bidx++)
     {
-#if 0
         TTLPanelEditorRow* thisrow = new TTLPanelEditorRow(parent, bidx);
 
         // Least significant bank is on the lower right.
@@ -138,11 +141,12 @@ T_PRINT("Editor constructor called.");
         ypos = (ypos - xpos) / TTLDEBUG_PANEL_UI_MAX_COLS;
 
         xpos = BUTTONROW_XHALO + xpos * BUTTONROW_XPITCH;
-        ypos = BUTTONROW_YHALO + ypos * BUTTONROW_YPITCH;
+        ypos = TITLEBAR_YOFFSET + BUTTONROW_YHALO + ypos * BUTTONROW_YPITCH;
         thisrow->setBounds(xpos, ypos, BUTTONROW_XSIZE, BUTTONROW_YSIZE);
 
+        addAndMakeVisible(thisrow);
+
         banks.add(thisrow);
-#endif
     }
 
 //    desiredWidth = TTLDEBUG_PANEL_UI_MAX_COLS * BUTTONROW_XPITCH;

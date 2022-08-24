@@ -45,7 +45,9 @@ TTLPanelBase::~TTLPanelBase()
 AudioProcessorEditor* TTLPanelBase::createEditor()
 {
 T_PRINT("Creating editor.");
-    return new TTLPanelBaseEditor(this);
+    // NOTE - We need to set the "editor" variable in GenericProcessor.
+    editor = new TTLPanelBaseEditor(this);
+    return editor;
 }
 
 
@@ -103,7 +105,7 @@ void TTLPanelBase::process(AudioSampleBuffer& buffer)
     // If we're a source, report queued changes to TTL output state.
     // If we're a sink, input events will be received via handleEvent().
 
-T_PRINT("process() called.");
+//T_PRINT("process() called.");
 // FIXME - NYI.
 }
 
@@ -113,7 +115,7 @@ void TTLPanelBase::handleEvent(const EventChannel* eventInfo, const MidiMessage&
 {
    // If we're a sink, look for TTL events here.
 
-T_PRINT("handleEvent() called.");
+//T_PRINT("handleEvent() called.");
 // FIXME - NYI.
 }
 

@@ -5,7 +5,7 @@
 
 // Magic constants for GUI geometry.
 #define TTLDEBUG_PANEL_UI_MAX_ROWS 4
-#define TTLDEBUG_PANEL_UI_MAX_COLS 2
+#define TTLDEBUG_PANEL_UI_MAX_COLS 1
 
 namespace TTLDebugTools
 {
