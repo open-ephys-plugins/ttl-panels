@@ -38,6 +38,7 @@ T_PRINT("Constructor called.");
 // Destructor.
 TTLPanelBase::~TTLPanelBase()
 {
+    // Nothing to do.
 }
 
 
@@ -49,24 +50,6 @@ T_PRINT("Creating editor.");
     editor = new TTLPanelBaseEditor(this);
     return editor;
 }
-
-
-// Role accessors.
-#if 0
-
-bool TTLPanelBase::isSource()
-{
-T_PRINT( "isSource() returning " << (isTTLSource ? "true." : "false.") );
-	return isTTLSource;
-}
-
-
-bool TTLPanelBase::isSink()
-{
-T_PRINT( "isSink() returning " << (~isTTLSource ? "true." : "false.") );
-	return !isTTLSource;
-}
-#endif
 
 
 // Rebuild external configuration information.
@@ -95,6 +78,16 @@ bool TTLPanelBase::enable()
 {
 T_PRINT("enable() called.");
     // Nothing to do.
+    return true;
+}
+
+
+
+// Accessor for go/no-go.
+bool TTLPanelBase::isReady()
+{
+T_PRINT("isReady() called.");
+    // We're always ready, with or without channels.
     return true;
 }
 

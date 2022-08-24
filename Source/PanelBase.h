@@ -27,15 +27,6 @@ namespace TTLDebugTools
 		bool hasEditor() const { return true; }
 		AudioProcessorEditor* createEditor() override;
 
-#if 0
-		// These need to be overridden for non-filters.
-		bool isFilter() const { return false; }
-		bool isSource();
-		bool isSink();
-		bool isSplitter() const { return false; }
-		bool isMerger() const { return false; }
-#endif
-
 		// Rebuild external configuration information.
 		// NOTE - We're making event channels here, not in createEventChannels().
 		void updateSettings() override;
@@ -45,6 +36,9 @@ namespace TTLDebugTools
 
 		// Initialization.
 		bool enable() override;
+
+		// Accessor for go/no-go.
+		bool isReady() override;
 
 		// Processing loop.
 		void process(AudioSampleBuffer& buffer) override;

@@ -7,6 +7,11 @@
 #define TTLDEBUG_PANEL_UI_MAX_ROWS 4
 #define TTLDEBUG_PANEL_UI_MAX_COLS 1
 
+// Magic constants for GUI colours.
+#define TTLDEBUG_PANEL_DISABLED_COLOR juce::Colours::lightgrey
+#define TTLDEBUG_PANEL_BITZERO_COLOR juce::Colours::grey
+#define TTLDEBUG_PANEL_BITONE_COLOR juce::Colours::green
+
 namespace TTLDebugTools
 {
 	class TTLPanelBase;
