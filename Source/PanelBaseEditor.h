@@ -8,9 +8,11 @@
 #define TTLDEBUG_PANEL_UI_MAX_COLS 1
 
 // Magic constants for GUI colours.
-#define TTLDEBUG_PANEL_DISABLED_COLOR juce::Colours::lightgrey
+#define TTLDEBUG_PANEL_DISABLED_COLOR juce::Colours::transparentWhite
 #define TTLDEBUG_PANEL_BITZERO_COLOR juce::Colours::grey
-#define TTLDEBUG_PANEL_BITONE_COLOR juce::Colours::green
+#define TTLDEBUG_PANEL_BITONE_COLOR juce::Colours::lime
+// FIXME - Debugging
+#define TTLDEBUG_USE_COLORBUTTON 0
 
 namespace TTLDebugTools
 {
@@ -30,14 +32,21 @@ namespace TTLDebugTools
 		void labelTextChanged(Label* theLabel);
 
 		// Accessors.
-		// NOTE - This queries the parent one bit at a time, which may be expensive.
+		void updateGUIFromData(uint64 datavalue);
+                // NOTE - These query and set parent bits one at a time, which may be expensive.
+		void updateDataFromLabel(Label *theLabel);
 		void refreshDisplay();
 
 	private:
 		TTLPanelBase* parent;
 		int bankIdx;
 
+// FIXME - Experimenting with button types.
+#if TTLDEBUG_USE_COLORBUTTON
+		OwnedArray<ColorButton> bitButtons;
+#else
 		OwnedArray<UtilityButton> bitButtons;
+#endif
 		ScopedPointer<UtilityButton> enableButton;
 		ScopedPointer<Label> hexLabel, decLabel;
 
@@ -69,7 +78,7 @@ namespace TTLDebugTools
 
 
 	// Canvas holding a large number of TTL banks.
-	// FIXME - NYI.
+	// FIXME - Canvas NYI.
 	// For the canvas, render controls and text a bit bigger, too.
 }
 

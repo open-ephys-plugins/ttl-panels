@@ -57,9 +57,14 @@ T_PRINT( "Making editor row " << newBankIdx << "." );
     bitButtons.clear();
     for (int bidx = 0; bidx < TTLDEBUG_PANEL_BANK_BITS; bidx++)
     {
+#if TTLDEBUG_USE_COLORBUTTON
+        ColorButton* btn = new ColorButton( std::to_string(bitnum + bidx), Font("Small Text", 13, Font::plain) );
+        btn->setColors(juce::Colours::black, TTLDEBUG_PANEL_DISABLED_COLOR);
+#else
         // NOTE - Bit buttons are not toggle buttons.
         UtilityButton* btn = new UtilityButton( std::to_string(bitnum + bidx), Font("Small Text", 13, Font::plain) );
         btn->setRadius(3.0f);
+#endif
         // Most significant on the left, least significant on the right.
         btn->setBounds(bitxpos + ((TTLDEBUG_PANEL_BANK_BITS - 1) - bidx) * BITBUTTON_XPITCH, BUTTONROW_YHALO, BITBUTTON_XSIZE, BUTTONROW_YSIZE);
         btn->addListener(this);
@@ -133,29 +138,13 @@ void TTLPanelEditorRow::labelTextChanged(Label* theLabel)
     // calls during editing returning the previous value, so it should be ok
     // either way.
 
-    uint64 datavalue = 0;
-
-    // Convert using stoull; JUCE only supports signed conversion, not unsigned.
-    std::string labeltext = (theLabel->getText()).toStdString();
-    if (theLabel == decLabel)
-        // Decimal label.
-        datavalue = (uint64) (std::stoull( labeltext ));
-    else
-        // Hexadecimal label.
-        datavalue = (uint64) (std::stoull( labeltext, nullptr, 16 ));
-
-    int bitnum = bankIdx * TTLDEBUG_PANEL_BANK_BITS;
-    for (int bidx = 0; bidx < TTLDEBUG_PANEL_BANK_BITS; bidx++)
-    {
-      parent->setBitValue( bitnum + bidx, datavalue & ((uint64) 1) );
-      datavalue >>= 1;
-    }
+    updateDataFromLabel(theLabel);
 }
 
 
-// State refresh accessor.
-// NOTE - This queries the parent one bit at a time, which may be expensive.
-void TTLPanelEditorRow::refreshDisplay()
+// GUI state refresh accessor.
+// This doesn't query bit state - you have to explicitly provide it.
+void TTLPanelEditorRow::updateGUIFromData(uint64 datavalue)
 {
     bool bankEnabled = parent->isBankEnabled(bankIdx);
     bool isSourcePanel = parent->isEventSourcePanel();
@@ -167,30 +156,43 @@ void TTLPanelEditorRow::refreshDisplay()
     if (bankEnabled)
     {
         // We're enabled. Show bit state and hex/dec values.
-        int bitnum = bankIdx * TTLDEBUG_PANEL_BANK_BITS;
-        uint64 dataval = 0;
+
+        // Button state.
         for (int bidx = 0; bidx < TTLDEBUG_PANEL_BANK_BITS; bidx++)
         {
-            if (parent->getBitValue(bitnum + bidx))
-            {
-                dataval |= ((uint64) 1) << bidx;
+            uint64 bitval = datavalue & ( ((uint64) 1) << bidx );
+
+            bitButtons[bidx]->setToggleState(bitval, dontSendNotification);
+
+#if TTLDEBUG_USE_COLORBUTTON
+// Open Ephys ColorButton accessor.
+            if (bitval)
+                bitButtons[bidx]->setColors(juce::Colours::black, TTLDEBUG_PANEL_BITONE_COLOR);
+            else
+                bitButtons[bidx]->setColors(juce::Colours::black, TTLDEBUG_PANEL_BITZERO_COLOR);
+#else
+// JUCE version - does nothing for Open Ephys's buttons.
+            if (bitval)
                 bitButtons[bidx]->setColour(TextButton::buttonColourId, TTLDEBUG_PANEL_BITONE_COLOR);
-            }
             else
                 bitButtons[bidx]->setColour(TextButton::buttonColourId, TTLDEBUG_PANEL_BITZERO_COLOR);
+#endif
 
             bitButtons[bidx]->setEnabled(isSourcePanel);
+
 // FIXME - Still not getting colour changes, here?
             bitButtons[bidx]->repaint();
         }
 
+        // Hex label.
         // FIXME - The cleaner way requires C++20. Do it the old dirty way.
         std::stringstream hexscratch;
-        hexscratch << std::hex << dataval;
+        hexscratch << std::hex << datavalue;
         hexLabel->setText(hexscratch.str(), dontSendNotification);
         hexLabel->setEnabled(isSourcePanel);
 
-        decLabel->setText(std::to_string(dataval), dontSendNotification);
+        // Decimal label.
+        decLabel->setText(std::to_string(datavalue), dontSendNotification);
         decLabel->setEnabled(isSourcePanel);
     }
     else
@@ -198,18 +200,72 @@ void TTLPanelEditorRow::refreshDisplay()
         // Not enabled. Blank the display.
         for (int bidx = 0; bidx < TTLDEBUG_PANEL_BANK_BITS; bidx++)
         {
+            bitButtons[bidx]->setToggleState(false, dontSendNotification);
             bitButtons[bidx]->setColour(TextButton::buttonColourId, TTLDEBUG_PANEL_DISABLED_COLOR);
             bitButtons[bidx]->setEnabled(false);
         }
 
-        hexLabel->setText("", dontSendNotification);
+        hexLabel->setText("- off -", dontSendNotification);
         hexLabel->setEnabled(false);
 
-        decLabel->setText("", dontSendNotification);
+        decLabel->setText("- off -", dontSendNotification);
         decLabel->setEnabled(false);
     }
 // FIXME - Try a higher-level repaint.
     repaint();
+}
+
+
+// NOTE - This sets parent bits one at a time, which may be expensive.
+void TTLPanelEditorRow::updateDataFromLabel(Label *theLabel)
+{
+    uint64 datavalue = 0;
+
+    // Convert to std::string so that we can use stoull.
+    // JUCE only natively supports signed conversion, not unsigned.
+    std::string labeltext = (theLabel->getText()).toStdString();
+
+    // Figure out which label we're converting from to get the radix.
+    if (theLabel == decLabel)
+        // Decimal label.
+        datavalue = (uint64) (std::stoull( labeltext ));
+    else
+        // Hexadecimal label.
+        datavalue = (uint64) (std::stoull( labeltext, nullptr, 16 ));
+
+    // Propagate the new bit values.
+    int bitnum = bankIdx * TTLDEBUG_PANEL_BANK_BITS;
+    for (int bidx = 0; bidx < TTLDEBUG_PANEL_BANK_BITS; bidx++)
+    {
+      parent->setBitValue( bitnum + bidx, datavalue & ((uint64) 1) );
+      datavalue >>= 1;
+    }
+
+    // Update button state and whichever label we didn't just edit.
+    updateGUIFromData(datavalue);
+}
+
+
+// State refresh accessor.
+// NOTE - This queries the parent one bit at a time, which may be expensive.
+void TTLPanelEditorRow::refreshDisplay()
+{
+    uint64 dataval = 0;
+
+    // If we're enabled, read the data state.
+    // Otherwise we can use dummy data.
+    if (parent->isBankEnabled(bankIdx))
+    {
+        int bitnum = bankIdx * TTLDEBUG_PANEL_BANK_BITS;
+        for (int bidx = 0; bidx < TTLDEBUG_PANEL_BANK_BITS; bidx++)
+        {
+            if (parent->getBitValue(bitnum + bidx))
+                dataval |= ((uint64) 1) << bidx;
+        }
+    }
+
+    // Update the display sate.
+    updateGUIFromData(dataval);
 }
 
 
@@ -282,7 +338,7 @@ void TTLPanelBaseEditor::updateAllBanks()
 //
 // Canvas holding a large number of TTL banks.
 
-// FIXME - NYI.
+// FIXME - Canvas NYI.
 // For the canvas, render controls and text a bit bigger, too.
 
 

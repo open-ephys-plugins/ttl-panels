@@ -61,7 +61,7 @@ void TTLPanelBase::updateSettings()
     // If we're a sink, enable banks based on how many inputs we have.
 
 T_PRINT("updateSettings() called.");
-// FIXME - NYI.
+// FIXME - updateSettings() NYI.
 }
 
 
@@ -69,7 +69,7 @@ T_PRINT("updateSettings() called.");
 void TTLPanelBase::createEventChannels()
 {
 T_PRINT("createEventChannels() called.");
-// FIXME - NYI.
+// FIXME - createEventChannels() NYI.
 }
 
 
@@ -104,7 +104,7 @@ void TTLPanelBase::process(AudioSampleBuffer& buffer)
 
 // Don't tattle this except for debugging; it gets spammy.
 //T_PRINT("process() called.");
-// FIXME - NYI.
+// FIXME - process() NYI.
 }
 
 
@@ -115,7 +115,7 @@ void TTLPanelBase::handleEvent(const EventChannel* eventInfo, const MidiMessage&
 
 // Don't tattle this except for debugging; it gets spammy.
 //T_PRINT("handleEvent() called.");
-// FIXME - NYI.
+// FIXME - handleEvent() NYI.
 }
 
 
@@ -167,7 +167,7 @@ T_PRINT("saveCustomParametersToXml() called.");
       parentElement->setAttribute("Type", "TTLTogglePanel");
     else
       parentElement->setAttribute("Type", "TTLFrontPanel");
-// FIXME - NYI.
+// FIXME - saveCustomParametersToXml() NYI.
 }
 
 
@@ -175,7 +175,7 @@ T_PRINT("saveCustomParametersToXml() called.");
 void TTLPanelBase::loadCustomParametersFromXml(XmlElement* parentElement)
 {
 T_PRINT("loadCustomParametersFromXml() called.");
-// FIXME - NYI.
+// FIXME - loadCustomParametersFromXml() NYI.
 }
 
 
