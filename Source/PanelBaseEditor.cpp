@@ -108,13 +108,48 @@ TTLPanelEditorRow::~TTLPanelEditorRow()
 
 void TTLPanelEditorRow::buttonClicked(Button* theButton)
 {
-// FIXME - NYI.
+    // If this is called at all, the button is enabled and we're an output.
+
+    if (theButton == enableButton)
+    {
+        // Enable button toggled.
+        parent->setBankEnabled(bankIdx, theButton->getToggleState());
+    }
+    else
+    {
+        // Bit button.
+        int bidx = (theButton->getButtonText()).getIntValue();
+        parent->setBitValue( bidx, !(parent->getBitValue(bidx)) );
+    }
 }
 
 
 void TTLPanelEditorRow::labelTextChanged(Label* theLabel)
 {
-// FIXME - NYI.
+    // If this is called at all, the label is enabled and we're an output.
+
+    // FIXME - This might be called multiple times during editing? Not sure.
+    // By default we only get a changed value when editing is finished, with
+    // calls during editing returning the previous value, so it should be ok
+    // either way.
+
+    uint64 datavalue = 0;
+
+    // Convert using stoull; JUCE only supports signed conversion, not unsigned.
+    std::string labeltext = (theLabel->getText()).toStdString();
+    if (theLabel == decLabel)
+        // Decimal label.
+        datavalue = (uint64) (std::stoull( labeltext ));
+    else
+        // Hexadecimal label.
+        datavalue = (uint64) (std::stoull( labeltext, nullptr, 16 ));
+
+    int bitnum = bankIdx * TTLDEBUG_PANEL_BANK_BITS;
+    for (int bidx = 0; bidx < TTLDEBUG_PANEL_BANK_BITS; bidx++)
+    {
+      parent->setBitValue( bitnum + bidx, datavalue & ((uint64) 1) );
+      datavalue >>= 1;
+    }
 }
 
 
@@ -145,6 +180,8 @@ void TTLPanelEditorRow::refreshDisplay()
                 bitButtons[bidx]->setColour(TextButton::buttonColourId, TTLDEBUG_PANEL_BITZERO_COLOR);
 
             bitButtons[bidx]->setEnabled(isSourcePanel);
+// FIXME - Still not getting colour changes, here?
+            bitButtons[bidx]->repaint();
         }
 
         // FIXME - The cleaner way requires C++20. Do it the old dirty way.
@@ -171,6 +208,8 @@ void TTLPanelEditorRow::refreshDisplay()
         decLabel->setText("", dontSendNotification);
         decLabel->setEnabled(false);
     }
+// FIXME - Try a higher-level repaint.
+    repaint();
 }
 
 
@@ -234,6 +273,8 @@ void TTLPanelBaseEditor::updateAllBanks()
     // Wrap the row update function.
     for (int bidx = 0; bidx < TTLDEBUG_PANEL_MAX_BANKS; bidx++)
         banks[bidx]->refreshDisplay();
+// FIXME - Try a higher-level repaint.
+    repaint();
 }
 
 

@@ -98,6 +98,11 @@ void TTLPanelBase::process(AudioSampleBuffer& buffer)
     // If we're a source, report queued changes to TTL output state.
     // If we're a sink, input events will be received via handleEvent().
 
+    // Update UI state no matter what.
+    // NOTE - This is already stored as the GenericProcessor class variable "editor".
+    ((TTLPanelBaseEditor *) editor.get())->updateAllBanks();
+
+// Don't tattle this except for debugging; it gets spammy.
 //T_PRINT("process() called.");
 // FIXME - NYI.
 }
@@ -108,6 +113,7 @@ void TTLPanelBase::handleEvent(const EventChannel* eventInfo, const MidiMessage&
 {
    // If we're a sink, look for TTL events here.
 
+// Don't tattle this except for debugging; it gets spammy.
 //T_PRINT("handleEvent() called.");
 // FIXME - NYI.
 }
@@ -117,8 +123,39 @@ void TTLPanelBase::handleEvent(const EventChannel* eventInfo, const MidiMessage&
 // Variables used by "process" should only be modified here.
 void TTLPanelBase::setParameter(int parameterIndex, float newValue)
 {
-// FIXME - NYI.
 T_PRINT( "setParameter() called setting " << parameterIndex << " to: " << newValue );
+
+    if (parameterIndex < TTLDEBUG_PANEL_PARAM_BASE_ENABLED)
+    {
+        // Bogus (negative) value.
+        T_PRINT( "Bogus parameter index! (too low)" );
+    }
+    else if (parameterIndex < TTLDEBUG_PANEL_PARAM_BASE_OUTPUT)
+    {
+        // Setting or clearing a "bank enabled" flag.
+        parameterIndex -= TTLDEBUG_PANEL_PARAM_BASE_ENABLED;
+        if ((parameterIndex >= 0) && (parameterIndex <= TTLDEBUG_PANEL_MAX_BANKS))
+            bankEnabled.set( parameterIndex, (newValue > 0) );
+        else
+        { T_PRINT( "Bank index to enable/disable (" << parameterIndex << ") is out of range." ); }
+    }
+    else if (parameterIndex < TTLDEBUG_PANEL_PARAM_BASE_BOGUS)
+    {
+        // Setting or clearing an output bit.
+        parameterIndex -= TTLDEBUG_PANEL_PARAM_BASE_OUTPUT;
+        if ((parameterIndex >= 0) && (parameterIndex <= TTLDEBUG_PANEL_TOTAL_BITS))
+        {
+            bitValue.set( parameterIndex, (newValue > 0) );
+            needUpdate.set( parameterIndex, true );
+        }
+        else
+        { T_PRINT( "Bit index to enable/disable (" << parameterIndex << ") is out of range." ); }
+    }
+    else
+    {
+        // Bogus (too-high) value.
+        T_PRINT( "Bogus parameter index! (too high)" );
+    }
 }
 
 
@@ -148,7 +185,8 @@ T_PRINT("loadCustomParametersFromXml() called.");
 
 bool TTLPanelBase::isEventSourcePanel()
 {
-T_PRINT( "isEventSourcePanel() returning " << (isTTLSource ? "true." : "false.") );
+// Don't tattle this except for debugging; it gets spammy.
+//T_PRINT( "isEventSourcePanel() returning " << (isTTLSource ? "true." : "false.") );
     return isTTLSource;
 }
 
