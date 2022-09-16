@@ -3,7 +3,8 @@
 ## Toggle Panel
 
 * Add controls to select positive pulse, negative pulse, or toggle when
-clicking bit buttons.
+clicking bit buttons. Add a combo box or cycling button for pulse length
+(e.g. 1/3/10/30/100/300/1000/3000 ms).
 
   _Note: This will involve making the plugin schedule future events._
 
