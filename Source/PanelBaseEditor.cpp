@@ -14,7 +14,11 @@ using namespace TTLDebugTools;
 #define BUTTONROW_YPITCH (BUTTONROW_YSIZE + BUTTONROW_YHALO + BUTTONROW_YHALO)
 
 #define BITBUTTON_XSIZE 20
+#if TTLDEBUG_USE_COLORBUTTON
+#define BITBUTTON_XHALO 1
+#else
 #define BITBUTTON_XHALO 0
+#endif
 #define BITBUTTON_XPITCH (BITBUTTON_XSIZE + BITBUTTON_XHALO + BITBUTTON_XHALO)
 #define BITBUTTON_SLAB_XSIZE (BITBUTTON_XPITCH * TTLDEBUG_PANEL_BANK_BITS)
 
@@ -165,23 +169,16 @@ void TTLPanelEditorRow::updateGUIFromData(uint64 datavalue)
             bitButtons[bidx]->setToggleState(bitval, dontSendNotification);
 
 #if TTLDEBUG_USE_COLORBUTTON
-// Open Ephys ColorButton accessor.
+            // Open Ephys ColorButton accessor.
             if (bitval)
                 bitButtons[bidx]->setColors(juce::Colours::black, TTLDEBUG_PANEL_BITONE_COLOR);
             else
                 bitButtons[bidx]->setColors(juce::Colours::black, TTLDEBUG_PANEL_BITZERO_COLOR);
 #else
-// JUCE version - does nothing for Open Ephys's buttons.
-            if (bitval)
-                bitButtons[bidx]->setColour(TextButton::buttonColourId, TTLDEBUG_PANEL_BITONE_COLOR);
-            else
-                bitButtons[bidx]->setColour(TextButton::buttonColourId, TTLDEBUG_PANEL_BITZERO_COLOR);
+            // We can't change UtilityButton colours; they're forced.
 #endif
 
             bitButtons[bidx]->setEnabled(isSourcePanel);
-
-// FIXME - Still not getting colour changes, here?
-            bitButtons[bidx]->repaint();
         }
 
         // Hex label.
@@ -201,7 +198,12 @@ void TTLPanelEditorRow::updateGUIFromData(uint64 datavalue)
         for (int bidx = 0; bidx < TTLDEBUG_PANEL_BANK_BITS; bidx++)
         {
             bitButtons[bidx]->setToggleState(false, dontSendNotification);
-            bitButtons[bidx]->setColour(TextButton::buttonColourId, TTLDEBUG_PANEL_DISABLED_COLOR);
+#if TTLDEBUG_USE_COLORBUTTON
+            // Open Ephys ColorButton accessor.
+            bitButtons[bidx]->setColors(juce::Colours::black, TTLDEBUG_PANEL_DISABLED_COLOR);
+#else
+            // We can't change UtilityButton colours; they're forced.
+#endif
             bitButtons[bidx]->setEnabled(false);
         }
 
@@ -211,8 +213,6 @@ void TTLPanelEditorRow::updateGUIFromData(uint64 datavalue)
         decLabel->setText("- off -", dontSendNotification);
         decLabel->setEnabled(false);
     }
-// FIXME - Try a higher-level repaint.
-    repaint();
 }
 
 
@@ -235,10 +235,11 @@ void TTLPanelEditorRow::updateDataFromLabel(Label *theLabel)
 
     // Propagate the new bit values.
     int bitnum = bankIdx * TTLDEBUG_PANEL_BANK_BITS;
+    uint64 bitmask = 1;
     for (int bidx = 0; bidx < TTLDEBUG_PANEL_BANK_BITS; bidx++)
     {
-      parent->setBitValue( bitnum + bidx, datavalue & ((uint64) 1) );
-      datavalue >>= 1;
+      parent->setBitValue( bitnum + bidx, datavalue & bitmask );
+      bitmask <<= 1;
     }
 
     // Update button state and whichever label we didn't just edit.
@@ -329,8 +330,6 @@ void TTLPanelBaseEditor::updateAllBanks()
     // Wrap the row update function.
     for (int bidx = 0; bidx < TTLDEBUG_PANEL_MAX_BANKS; bidx++)
         banks[bidx]->refreshDisplay();
-// FIXME - Try a higher-level repaint.
-    repaint();
 }
 
 
