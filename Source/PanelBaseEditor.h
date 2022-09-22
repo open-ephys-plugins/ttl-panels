@@ -65,7 +65,7 @@ namespace TTLDebugTools
 		OwnedArray<UtilityButton> bitButtons;
 #endif
 		ScopedPointer<UtilityButton> enableButton;
-		ScopedPointer<Label> hexLabel, decLabel;
+		ScopedPointer<Label> hexLabel, decLabel, hexTitle, decTitle;
 
 		JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(TTLPanelEditorRow);
 	};

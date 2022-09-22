@@ -25,10 +25,12 @@ using namespace TTLDebugTools;
 #define ENBUTTON_XSIZE 40
 #define ENBUTTON_XGAP 8
 
-#define NUMLABEL_XSIZE 60
+#define NUMLABEL_XTITLE 30
+#define NUMLABEL_XSIZE 40
 #define NUMLABEL_XGAP 8
+#define NUMLABEL_XPITCH (NUMLABEL_XGAP + NUMLABEL_XTITLE + NUMLABEL_XSIZE)
 
-#define BUTTONROW_XSIZE (ENBUTTON_XSIZE + ENBUTTON_XGAP + BITBUTTON_SLAB_XSIZE + 2*NUMLABEL_XGAP + 2*NUMLABEL_XSIZE)
+#define BUTTONROW_XSIZE (ENBUTTON_XSIZE + ENBUTTON_XGAP + BITBUTTON_SLAB_XSIZE + 2*NUMLABEL_XPITCH)
 #define BUTTONROW_XHALO 10
 #define BUTTONROW_XPITCH (BUTTONROW_XSIZE + BUTTONROW_XHALO + BUTTONROW_XHALO)
 
@@ -93,18 +95,32 @@ T_PRINT( "Making editor row " << newBankIdx << "." );
 
     int labelxpos = ENBUTTON_XSIZE + ENBUTTON_XGAP + BITBUTTON_SLAB_XSIZE + NUMLABEL_XGAP;
 
-    hexLabel = new Label( "HexLabel", "Hex" );
-    hexLabel->setBounds(labelxpos, BUTTONROW_YHALO, NUMLABEL_XSIZE, BUTTONROW_YSIZE);
+    hexTitle = new Label( "HexTitle", "Hex:" );
+    hexTitle->setBounds(labelxpos, BUTTONROW_YHALO, NUMLABEL_XTITLE, BUTTONROW_YSIZE);
+    hexTitle->setJustificationType(Justification::centredRight);
+    addAndMakeVisible(hexTitle);
+    hexTitle->setEnabled(false);
+
+    hexLabel = new Label( "HexLabel", "bogus" );
+    hexLabel->setBounds(labelxpos + NUMLABEL_XTITLE, BUTTONROW_YHALO, NUMLABEL_XSIZE, BUTTONROW_YSIZE);
     hexLabel->addListener(this);
     addAndMakeVisible(hexLabel);
+    hexLabel->setEditable(isTTLSource);
     hexLabel->setEnabled(isTTLSource);
 
-    labelxpos += NUMLABEL_XSIZE + NUMLABEL_XGAP;
+    labelxpos += NUMLABEL_XPITCH;
 
-    decLabel = new Label( "DecLabel", "Dec" );
-    decLabel->setBounds(labelxpos, BUTTONROW_YHALO, NUMLABEL_XSIZE, BUTTONROW_YSIZE);
+    decTitle = new Label( "DecTitle", "Dec:" );
+    decTitle->setBounds(labelxpos, BUTTONROW_YHALO, NUMLABEL_XTITLE, BUTTONROW_YSIZE);
+    decTitle->setJustificationType(Justification::centredRight);
+    addAndMakeVisible(decTitle);
+    decTitle->setEnabled(false);
+
+    decLabel = new Label( "DecLabel", "bogus" );
+    decLabel->setBounds(labelxpos + NUMLABEL_XTITLE, BUTTONROW_YHALO, NUMLABEL_XSIZE, BUTTONROW_YSIZE);
     decLabel->addListener(this);
     addAndMakeVisible(decLabel);
+    decLabel->setEditable(isTTLSource);
     decLabel->setEnabled(isTTLSource);
 T_PRINT( "Finished making editor row " << newBankIdx << "." );
 }
@@ -140,15 +156,10 @@ void TTLPanelEditorRow::buttonClicked(Button* theButton)
 void TTLPanelEditorRow::labelTextChanged(Label* theLabel)
 {
     // If this is called at all, the label is enabled and we're an output.
+    // It's called once when editing finishes.
+T_PRINT("labelTextChanged called.");
 
-    // FIXME - This might be called multiple times during editing? Not sure.
-    // By default we only get a changed value when editing is finished, with
-    // calls during editing returning the previous value, so it should be ok
-    // either way.
-
-//    updateParentFromLabel(theLabel);
-// FIXME - We want to distinguish textWasEdited() label changes from
-// changes pushed to the label.
+    updateParentFromLabel(theLabel);
 }
 
 
@@ -195,10 +206,12 @@ void TTLPanelEditorRow::updateGUIFromData(uint64 datavalue)
         // FIXME - The cleaner way requires C++20. Do it the old dirty way.
         std::stringstream hexscratch;
         hexscratch << std::hex << datavalue;
-        hexLabel->setText(hexscratch.str(), dontSendNotification);
+        if (!( hexLabel->isBeingEdited() ))
+            hexLabel->setText(hexscratch.str(), dontSendNotification);
 
         // Decimal label.
-        decLabel->setText(std::to_string(datavalue), dontSendNotification);
+        if (!( decLabel->isBeingEdited() ))
+            decLabel->setText(std::to_string(datavalue), dontSendNotification);
     }
     else
     {
