@@ -30,9 +30,11 @@ using namespace TTLDebugTools;
 #define NUMLABEL_XGAP 8
 #define NUMLABEL_XPITCH (NUMLABEL_XGAP + NUMLABEL_XTITLE + NUMLABEL_XSIZE)
 
-#define BUTTONROW_XSIZE (ENBUTTON_XSIZE + ENBUTTON_XGAP + BITBUTTON_SLAB_XSIZE + 2*NUMLABEL_XPITCH)
+#define BUTTONROW_XSIZE_EN_NO (BITBUTTON_SLAB_XSIZE + 2*NUMLABEL_XPITCH)
+#define BUTTONROW_XSIZE_EN_YES (ENBUTTON_XSIZE + ENBUTTON_XGAP + BUTTONROW_XSIZE_EN_NO)
 #define BUTTONROW_XHALO 10
-#define BUTTONROW_XPITCH (BUTTONROW_XSIZE + BUTTONROW_XHALO + BUTTONROW_XHALO)
+#define BUTTONROW_XPITCH_EN_NO (BUTTONROW_XSIZE_EN_NO + 2*BUTTONROW_XHALO)
+#define BUTTONROW_XPITCH_EN_YES (BUTTONROW_XSIZE_EN_YES + 2*BUTTONROW_XHALO)
 
 
 // Diagnostic tattle macros.
@@ -54,15 +56,35 @@ using namespace TTLDebugTools;
 TTLPanelEditorRow::TTLPanelEditorRow(TTLPanelBase* newParent, int newBankIdx)
 {
 T_PRINT( "Making editor row " << newBankIdx << "." );
+
+    // Store metadata.
+
     parent = newParent;
     bankIdx = newBankIdx;
-
     isTTLSource = parent->isEventSourcePanel();
-    isBankEnabled = 0;
+    isBankEnabled = false;
     bankDataValue = 0;
 
+
+    // Make the enable button.
+    // The enable button is present but invisible if we're not a source.
+
+    enableButton = new UtilityButton( "En", Font("Small Text", 13, Font::plain) );
+    enableButton->setRadius(3.0f);
+    enableButton->setBounds(0, BUTTONROW_YHALO, ENBUTTON_XSIZE, BUTTONROW_YSIZE);
+    enableButton->setClickingTogglesState(isTTLSource);
+    enableButton->addListener(this);
+    addAndMakeVisible(enableButton);
+    enableButton->setEnabled(isTTLSource);
+    enableButton->setVisible(isTTLSource);
+
+
+    // Make buttons for bits. These are UtilityButtons or ColorButtons.
+
     int bitnum = bankIdx * TTLDEBUG_PANEL_BANK_BITS;
-    int bitxpos = ENBUTTON_XSIZE + ENBUTTON_XGAP + BITBUTTON_XHALO;
+    int bitxpos = BITBUTTON_XHALO;
+    if (isTTLSource)
+      bitxpos += ENBUTTON_XSIZE + ENBUTTON_XGAP;
 
     bitButtons.clear();
     for (int bidx = 0; bidx < TTLDEBUG_PANEL_BANK_BITS; bidx++)
@@ -83,17 +105,12 @@ T_PRINT( "Making editor row " << newBankIdx << "." );
         bitButtons.add(btn);
     }
 
-    // Enable button and label contents are for debugging. They'll be overwritten on refresh.
 
-    enableButton = new UtilityButton( "En", Font("Small Text", 13, Font::plain) );
-    enableButton->setRadius(3.0f);
-    enableButton->setBounds(0, BUTTONROW_YHALO, ENBUTTON_XSIZE, BUTTONROW_YSIZE);
-    enableButton->setClickingTogglesState(isTTLSource);
-    enableButton->addListener(this);
-    addAndMakeVisible(enableButton);
-    enableButton->setEnabled(isTTLSource);
+    // Make labels for numeric display and data entry.
 
-    int labelxpos = ENBUTTON_XSIZE + ENBUTTON_XGAP + BITBUTTON_SLAB_XSIZE + NUMLABEL_XGAP;
+    int labelxpos = BITBUTTON_SLAB_XSIZE + NUMLABEL_XGAP;
+    if (isTTLSource)
+      labelxpos += ENBUTTON_XSIZE + ENBUTTON_XGAP;
 
     hexTitle = new Label( "HexTitle", "Hex:" );
     hexTitle->setBounds(labelxpos, BUTTONROW_YHALO, NUMLABEL_XTITLE, BUTTONROW_YSIZE);
@@ -122,6 +139,7 @@ T_PRINT( "Making editor row " << newBankIdx << "." );
     addAndMakeVisible(decLabel);
     decLabel->setEditable(isTTLSource);
     decLabel->setEnabled(isTTLSource);
+
 T_PRINT( "Finished making editor row " << newBankIdx << "." );
 }
 
@@ -308,6 +326,14 @@ T_PRINT("Editor constructor called.");
 
     banks.clear();
 
+    int button_row_x_pitch = BUTTONROW_XPITCH_EN_NO;
+    int button_row_x_size = BUTTONROW_XSIZE_EN_NO;
+    if (parent->isEventSourcePanel())
+    {
+      button_row_x_pitch = BUTTONROW_XPITCH_EN_YES;
+      button_row_x_size = BUTTONROW_XSIZE_EN_YES;
+    }
+
     for (int bidx = 0; bidx < TTLDEBUG_PANEL_MAX_BANKS; bidx++)
     {
         TTLPanelEditorRow* thisrow = new TTLPanelEditorRow(parent, bidx);
@@ -317,16 +343,16 @@ T_PRINT("Editor constructor called.");
         int xpos = ypos % TTLDEBUG_PANEL_UI_MAX_COLS;
         ypos = (ypos - xpos) / TTLDEBUG_PANEL_UI_MAX_COLS;
 
-        xpos = BUTTONROW_XHALO + xpos * BUTTONROW_XPITCH;
+        xpos = BUTTONROW_XHALO + xpos * button_row_x_pitch;
         ypos = TITLEBAR_YOFFSET + BUTTONROW_YHALO + ypos * BUTTONROW_YPITCH;
-        thisrow->setBounds(xpos, ypos, BUTTONROW_XSIZE, BUTTONROW_YSIZE);
+        thisrow->setBounds(xpos, ypos, button_row_x_size, BUTTONROW_YSIZE);
 
         addAndMakeVisible(thisrow);
 
         banks.add(thisrow);
     }
 
-    setDesiredWidth(TTLDEBUG_PANEL_UI_MAX_COLS * BUTTONROW_XPITCH);
+    setDesiredWidth(TTLDEBUG_PANEL_UI_MAX_COLS * button_row_x_pitch);
 
     // NOTE - The redraw timer should be running even if we're not acquiring data.
     startTimer(TTLDEBUG_PANEL_DISPLAY_REFRESH_MS);
