@@ -57,11 +57,16 @@ namespace TTLDebugTools
 
 		// Accessors for querying and modifying state.
 		// Modifying is done via setParameter, since that's guaranteed safe.
+		// NOTE - We're not calling query accessors any more!
 		bool isEventSourcePanel();
 		bool getBitValue(int bitNum);
 		void setBitValue(int bitNum, bool newState);
 		bool isBankEnabled(int bankNum);
 		void setBankEnabled(int bankNum, bool wantEnabled);
+
+		// This propagates state to the display.
+		// It's called by process() and can also be called manually.
+		void pushStateToDisplay();
 
 	protected:
 		bool isTTLSource;

@@ -32,6 +32,13 @@ T_PRINT("Constructor called.");
 
     bitValue.clear();
     bitValue.insertMultiple(0, false, TTLDEBUG_PANEL_TOTAL_BITS);
+
+    // NOTE Per Josh, we need to set the processor type here in addition to
+    // reporting it from getLibInfo().
+    if (wantSource)
+        setProcessorType(PluginProcessorType::PROCESSOR_TYPE_SOURCE);
+    else
+        setProcessorType(PluginProcessorType::PROCESSOR_TYPE_SINK);
 }
 
 
@@ -98,9 +105,9 @@ void TTLPanelBase::process(AudioSampleBuffer& buffer)
     // If we're a source, report queued changes to TTL output state.
     // If we're a sink, input events will be received via handleEvent().
 
-    // Update UI state no matter what.
-    // NOTE - This is already stored as the GenericProcessor class variable "editor".
-    ((TTLPanelBaseEditor *) editor.get())->updateAllBanks();
+    // Update UI state.
+    // The editor shouldn't ask for this while running, to avoid race conditions.
+    pushStateToDisplay();
 
 // Don't tattle this except for debugging; it gets spammy.
 //T_PRINT("process() called.");
@@ -181,6 +188,7 @@ T_PRINT("loadCustomParametersFromXml() called.");
 
 // Accessors for querying and modifying state.
 // Modifying is done via setParameter, since that's guaranteed safe.
+// NOTE - We're not calling query accessors any more!
 
 
 bool TTLPanelBase::isEventSourcePanel()
@@ -224,6 +232,16 @@ void TTLPanelBase::setBankEnabled(int bankNum, bool wantEnabled)
 {
   if ((bankNum >= 0) && (bankNum < TTLDEBUG_PANEL_MAX_BANKS))
     setParameter( TTLDEBUG_PANEL_PARAM_BASE_ENABLED + bankNum, (wantEnabled ? 1 : -1) );
+}
+
+
+// This propagates state to the display.
+// It's called by process() and can also be called manually.
+
+void TTLPanelBase::pushStateToDisplay()
+{
+    // NOTE - The editor is already stored as the GenericProcessor class variable "editor".
+    ((TTLPanelBaseEditor *) editor.get())->pushStateToEditor(bankEnabled, bitValue);
 }
 
 

@@ -55,6 +55,10 @@ T_PRINT( "Making editor row " << newBankIdx << "." );
     parent = newParent;
     bankIdx = newBankIdx;
 
+    isTTLSource = parent->isEventSourcePanel();
+    isBankEnabled = 0;
+    bankDataValue = 0;
+
     int bitnum = bankIdx * TTLDEBUG_PANEL_BANK_BITS;
     int bitxpos = ENBUTTON_XSIZE + ENBUTTON_XGAP + BITBUTTON_XHALO;
 
@@ -82,10 +86,10 @@ T_PRINT( "Making editor row " << newBankIdx << "." );
     enableButton = new UtilityButton( "En", Font("Small Text", 13, Font::plain) );
     enableButton->setRadius(3.0f);
     enableButton->setBounds(0, BUTTONROW_YHALO, ENBUTTON_XSIZE, BUTTONROW_YSIZE);
-    enableButton->setClickingTogglesState(parent->isEventSourcePanel());
+    enableButton->setClickingTogglesState(isTTLSource);
     enableButton->addListener(this);
     addAndMakeVisible(enableButton);
-    enableButton->setEnabled(parent->isEventSourcePanel());
+    enableButton->setEnabled(isTTLSource);
 
     int labelxpos = ENBUTTON_XSIZE + ENBUTTON_XGAP + BITBUTTON_SLAB_XSIZE + NUMLABEL_XGAP;
 
@@ -93,7 +97,7 @@ T_PRINT( "Making editor row " << newBankIdx << "." );
     hexLabel->setBounds(labelxpos, BUTTONROW_YHALO, NUMLABEL_XSIZE, BUTTONROW_YSIZE);
     hexLabel->addListener(this);
     addAndMakeVisible(hexLabel);
-    hexLabel->setEnabled(parent->isEventSourcePanel());
+    hexLabel->setEnabled(isTTLSource);
 
     labelxpos += NUMLABEL_XSIZE + NUMLABEL_XGAP;
 
@@ -101,7 +105,7 @@ T_PRINT( "Making editor row " << newBankIdx << "." );
     decLabel->setBounds(labelxpos, BUTTONROW_YHALO, NUMLABEL_XSIZE, BUTTONROW_YSIZE);
     decLabel->addListener(this);
     addAndMakeVisible(decLabel);
-    decLabel->setEnabled(parent->isEventSourcePanel());
+    decLabel->setEnabled(isTTLSource);
 T_PRINT( "Finished making editor row " << newBankIdx << "." );
 }
 
@@ -142,22 +146,31 @@ void TTLPanelEditorRow::labelTextChanged(Label* theLabel)
     // calls during editing returning the previous value, so it should be ok
     // either way.
 
-    updateDataFromLabel(theLabel);
+//    updateParentFromLabel(theLabel);
+// FIXME - We want to distinguish textWasEdited() label changes from
+// changes pushed to the label.
 }
 
 
-// GUI state refresh accessor.
-// This doesn't query bit state - you have to explicitly provide it.
+// Data push accessor.
+void TTLPanelEditorRow::setDataState(bool wantEnabled, uint64 newDataValue)
+{
+    isBankEnabled = wantEnabled;
+    bankDataValue = newDataValue;
+
+// FIXME - Diagnostics. Very spammy.
+//T_PRINT("Bank " << bankIdx << " set to " << (wantEnabled ? "On" : "Off") << " data: " << newDataValue);
+}
+
+
+// GUI data redraw accessor.
 void TTLPanelEditorRow::updateGUIFromData(uint64 datavalue)
 {
-    bool bankEnabled = parent->isBankEnabled(bankIdx);
-    bool isSourcePanel = parent->isEventSourcePanel();
-
-    // Update the bank enable button.
-    enableButton->setToggleState(bankEnabled, dontSendNotification);
+    // Update the bank enable button appearance.
+    enableButton->setToggleState(isBankEnabled, dontSendNotification);
 
     // Update the bit buttons and hex/dec readouts.
-    if (bankEnabled)
+    if (isBankEnabled)
     {
         // We're enabled. Show bit state and hex/dec values.
 
@@ -166,8 +179,6 @@ void TTLPanelEditorRow::updateGUIFromData(uint64 datavalue)
         {
             uint64 bitval = datavalue & ( ((uint64) 1) << bidx );
 
-            bitButtons[bidx]->setToggleState(bitval, dontSendNotification);
-
 #if TTLDEBUG_USE_COLORBUTTON
             // Open Ephys ColorButton accessor.
             if (bitval)
@@ -175,10 +186,9 @@ void TTLPanelEditorRow::updateGUIFromData(uint64 datavalue)
             else
                 bitButtons[bidx]->setColors(juce::Colours::black, TTLDEBUG_PANEL_BITZERO_COLOR);
 #else
+            bitButtons[bidx]->setToggleState(bitval, dontSendNotification);
             // We can't change UtilityButton colours; they're forced.
 #endif
-
-            bitButtons[bidx]->setEnabled(isSourcePanel);
         }
 
         // Hex label.
@@ -186,38 +196,64 @@ void TTLPanelEditorRow::updateGUIFromData(uint64 datavalue)
         std::stringstream hexscratch;
         hexscratch << std::hex << datavalue;
         hexLabel->setText(hexscratch.str(), dontSendNotification);
-        hexLabel->setEnabled(isSourcePanel);
 
         // Decimal label.
         decLabel->setText(std::to_string(datavalue), dontSendNotification);
-        decLabel->setEnabled(isSourcePanel);
     }
     else
     {
         // Not enabled. Blank the display.
         for (int bidx = 0; bidx < TTLDEBUG_PANEL_BANK_BITS; bidx++)
         {
-            bitButtons[bidx]->setToggleState(false, dontSendNotification);
 #if TTLDEBUG_USE_COLORBUTTON
             // Open Ephys ColorButton accessor.
             bitButtons[bidx]->setColors(juce::Colours::black, TTLDEBUG_PANEL_DISABLED_COLOR);
 #else
+            bitButtons[bidx]->setToggleState(false, dontSendNotification);
             // We can't change UtilityButton colours; they're forced.
 #endif
-            bitButtons[bidx]->setEnabled(false);
         }
 
         hexLabel->setText("- off -", dontSendNotification);
-        hexLabel->setEnabled(false);
-
         decLabel->setText("- off -", dontSendNotification);
-        decLabel->setEnabled(false);
     }
 }
 
 
+// GUI enable/disable accessor.
+void TTLPanelEditorRow::updateGUIEnabledState(bool wantBankEnabled, bool wantEnButtonEnabled)
+{
+    // If we're enabled, enable the bit buttons and labels if and only if we're a source.
+
+    bool bankEnabledState = (isTTLSource && wantBankEnabled);
+
+    for (int bidx = 0; bidx < TTLDEBUG_PANEL_BANK_BITS; bidx++)
+        bitButtons[bidx]->setEnabled(bankEnabledState);
+
+    hexLabel->setEnabled(bankEnabledState);
+    decLabel->setEnabled(bankEnabledState);
+
+
+    // If we're a source, enable the "enable" button if requested.
+
+    enableButton->setEnabled(isTTLSource && wantEnButtonEnabled);
+}
+
+
+// GUI redraw entry point.
+void TTLPanelEditorRow::refreshDisplay(bool isRunning)
+{
+// FIXME - Diagnostics. Spammy.
+//T_PRINT("Refresh bank " << bankIdx << (isBankEnabled ? " (On)" : " (Off)") << (isTTLSource ? " (Source)" : " (Display)") << " data: " << bankDataValue);
+    // Update the display state.
+    // When we're running, lock out the bank enable/disable buttons.
+    updateGUIFromData(bankDataValue);
+    updateGUIEnabledState(isBankEnabled, isTTLSource && (!isRunning));
+}
+
+
 // NOTE - This sets parent bits one at a time, which may be expensive.
-void TTLPanelEditorRow::updateDataFromLabel(Label *theLabel)
+void TTLPanelEditorRow::updateParentFromLabel(Label *theLabel)
 {
     uint64 datavalue = 0;
 
@@ -242,31 +278,7 @@ void TTLPanelEditorRow::updateDataFromLabel(Label *theLabel)
       bitmask <<= 1;
     }
 
-    // Update button state and whichever label we didn't just edit.
-    updateGUIFromData(datavalue);
-}
-
-
-// State refresh accessor.
-// NOTE - This queries the parent one bit at a time, which may be expensive.
-void TTLPanelEditorRow::refreshDisplay()
-{
-    uint64 dataval = 0;
-
-    // If we're enabled, read the data state.
-    // Otherwise we can use dummy data.
-    if (parent->isBankEnabled(bankIdx))
-    {
-        int bitnum = bankIdx * TTLDEBUG_PANEL_BANK_BITS;
-        for (int bidx = 0; bidx < TTLDEBUG_PANEL_BANK_BITS; bidx++)
-        {
-            if (parent->getBitValue(bitnum + bidx))
-                dataval |= ((uint64) 1) << bidx;
-        }
-    }
-
-    // Update the display sate.
-    updateGUIFromData(dataval);
+    // NOTE - Don't update GUI state or data. Let the parent plugin and timer callback do that.
 }
 
 
@@ -301,8 +313,10 @@ T_PRINT("Editor constructor called.");
         banks.add(thisrow);
     }
 
-//    desiredWidth = TTLDEBUG_PANEL_UI_MAX_COLS * BUTTONROW_XPITCH;
     setDesiredWidth(TTLDEBUG_PANEL_UI_MAX_COLS * BUTTONROW_XPITCH);
+
+    // NOTE - The redraw timer should be running even if we're not acquiring data.
+    startTimer(TTLDEBUG_PANEL_DISPLAY_REFRESH_MS);
 T_PRINT("Editor constructor finished.");
 }
 
@@ -310,26 +324,55 @@ T_PRINT("Editor constructor finished.");
 // Destructor.
 TTLPanelBaseEditor::~TTLPanelBaseEditor()
 {
-    // Nothing to do.
     // "OwnedArray" and "ScopedPointer" take care of de-allocation for us.
+
+    // Clean up the timer. Parent constructor probably does this but be safe.
+    stopTimer();
 }
 
 
-// Plugin update hook.
-void TTLPanelBaseEditor::updateSettings()
+// Timer callback.
+void TTLPanelBaseEditor::timerCallback()
 {
-T_PRINT("Editor updateSettings() called.");
-    updateAllBanks();
+    // FIXME - Pull data if not running.
+    // If we're running, let process() push it to avoid race conditions.
+    // Check the "acquisitionIsActive" state variable from GenericEditor.
+    if (!acquisitionIsActive)
+        parent->pushStateToDisplay();
+
+    redrawAllBanks();
 }
 
 
-// State refresh accessor.
-// NOTE - This queries the parent one bit at a time, which may be expensive.
-void TTLPanelBaseEditor::updateAllBanks()
+// Accessor to push plugin state to the editor.
+void TTLPanelBaseEditor::pushStateToEditor(Array<bool>& parentBankEnabled, Array<bool>& parentBitValues)
+{
+    for (int bankIdx = 0; bankIdx < TTLDEBUG_PANEL_MAX_BANKS; bankIdx++)
+    {
+        uint64 dataval = 0;
+
+        int bitnum = bankIdx * TTLDEBUG_PANEL_BANK_BITS;
+        for (int bitIdx = 0; bitIdx < TTLDEBUG_PANEL_BANK_BITS; bitIdx++)
+        {
+            if (parentBitValues[bitnum + bitIdx])
+                dataval |= ((uint64) 1) << bitIdx;
+        }
+
+        banks[bankIdx]->setDataState(parentBankEnabled[bankIdx], dataval);
+    }
+}
+
+
+// Redraw function. Should be called from the timer, not the plugin.
+void TTLPanelBaseEditor::redrawAllBanks()
 {
     // Wrap the row update function.
+    // Pass the "acquisitionIsActive" state variable from GenericEditor.
     for (int bidx = 0; bidx < TTLDEBUG_PANEL_MAX_BANKS; bidx++)
-        banks[bidx]->refreshDisplay();
+        banks[bidx]->refreshDisplay(acquisitionIsActive);
+
+    // FIXME - Force a manual repaint. Otherwise colorbutton doesn't change while under mouse focus.
+    repaint();
 }
 
 
