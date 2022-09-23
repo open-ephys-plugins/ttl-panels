@@ -14,10 +14,6 @@
 
 // Magic constants for display refresh.
 #define TTLDEBUG_PANEL_DISPLAY_REFRESH_MS 20
-//define TTLDEBUG_PANEL_DISPLAY_REFRESH_MS 1000
-
-// FIXME - Appearance switch.
-#define TTLDEBUG_USE_COLORBUTTON 1
 
 namespace TTLDebugTools
 {
@@ -58,12 +54,7 @@ namespace TTLDebugTools
 		bool isBankEnabled;
 		uint64 bankDataValue;
 
-// FIXME - Experimenting with button types.
-#if TTLDEBUG_USE_COLORBUTTON
 		OwnedArray<ColorButton> bitButtons;
-#else
-		OwnedArray<UtilityButton> bitButtons;
-#endif
 		ScopedPointer<UtilityButton> enableButton;
 		ScopedPointer<Label> hexLabel, decLabel, hexTitle, decTitle;
 

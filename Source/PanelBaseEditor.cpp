@@ -14,11 +14,7 @@ using namespace TTLDebugTools;
 #define BUTTONROW_YPITCH (BUTTONROW_YSIZE + BUTTONROW_YHALO + BUTTONROW_YHALO)
 
 #define BITBUTTON_XSIZE 20
-#if TTLDEBUG_USE_COLORBUTTON
 #define BITBUTTON_XHALO 1
-#else
-#define BITBUTTON_XHALO 0
-#endif
 #define BITBUTTON_XPITCH (BITBUTTON_XSIZE + BITBUTTON_XHALO + BITBUTTON_XHALO)
 #define BITBUTTON_SLAB_XSIZE (BITBUTTON_XPITCH * TTLDEBUG_PANEL_BANK_BITS)
 
@@ -79,7 +75,7 @@ T_PRINT( "Making editor row " << newBankIdx << "." );
     enableButton->setVisible(isTTLSource);
 
 
-    // Make buttons for bits. These are UtilityButtons or ColorButtons.
+    // Make buttons for bits.
 
     int bitnum = bankIdx * TTLDEBUG_PANEL_BANK_BITS;
     int bitxpos = BITBUTTON_XHALO;
@@ -89,14 +85,8 @@ T_PRINT( "Making editor row " << newBankIdx << "." );
     bitButtons.clear();
     for (int bidx = 0; bidx < TTLDEBUG_PANEL_BANK_BITS; bidx++)
     {
-#if TTLDEBUG_USE_COLORBUTTON
         ColorButton* btn = new ColorButton( std::to_string(bitnum + bidx), Font("Small Text", 13, Font::plain) );
         btn->setColors(juce::Colours::black, TTLDEBUG_PANEL_DISABLED_COLOR);
-#else
-        // NOTE - Bit buttons are not toggle buttons.
-        UtilityButton* btn = new UtilityButton( std::to_string(bitnum + bidx), Font("Small Text", 13, Font::plain) );
-        btn->setRadius(3.0f);
-#endif
         // Most significant on the left, least significant on the right.
         btn->setBounds(bitxpos + ((TTLDEBUG_PANEL_BANK_BITS - 1) - bidx) * BITBUTTON_XPITCH, BUTTONROW_YHALO, BITBUTTON_XSIZE, BUTTONROW_YSIZE);
         btn->addListener(this);
@@ -208,16 +198,11 @@ void TTLPanelEditorRow::updateGUIFromData(uint64 datavalue)
         {
             uint64 bitval = datavalue & ( ((uint64) 1) << bidx );
 
-#if TTLDEBUG_USE_COLORBUTTON
             // Open Ephys ColorButton accessor.
             if (bitval)
                 bitButtons[bidx]->setColors(juce::Colours::black, TTLDEBUG_PANEL_BITONE_COLOR);
             else
                 bitButtons[bidx]->setColors(juce::Colours::black, TTLDEBUG_PANEL_BITZERO_COLOR);
-#else
-            bitButtons[bidx]->setToggleState(bitval, dontSendNotification);
-            // We can't change UtilityButton colours; they're forced.
-#endif
         }
 
         // Hex label.
@@ -236,13 +221,8 @@ void TTLPanelEditorRow::updateGUIFromData(uint64 datavalue)
         // Not enabled. Blank the display.
         for (int bidx = 0; bidx < TTLDEBUG_PANEL_BANK_BITS; bidx++)
         {
-#if TTLDEBUG_USE_COLORBUTTON
             // Open Ephys ColorButton accessor.
             bitButtons[bidx]->setColors(juce::Colours::black, TTLDEBUG_PANEL_DISABLED_COLOR);
-#else
-            bitButtons[bidx]->setToggleState(false, dontSendNotification);
-            // We can't change UtilityButton colours; they're forced.
-#endif
         }
 
         hexLabel->setText("- off -", dontSendNotification);
