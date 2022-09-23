@@ -8,8 +8,6 @@ clicking bit buttons. Add a combo box or cycling button for pulse length
 
   _Note: This will involve making the plugin schedule future events._
 
-* Get nicer colours working for the buttons.
-
 * Maybe allow a large windowed version?
 
 

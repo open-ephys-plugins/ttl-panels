@@ -15,13 +15,29 @@ generated.
 to be viewed on a strip-chart.
 
 
-## Limitations:
+## Limitations
 
 * The toggle panel and front panel are not visualizers; they're limited to
 a small number of channels (32), to allow display in the plugin bar.
 
+* The number of bits per bank in the toggle panel and front panel is limited
+to 64, due to internally storing bank state as a uint64 integer.
+
 * **(NYI)** The pattern generator only supports up to 64 outputs, due to
-internally storing output state as a uint64_t integer.
+internally storing output state as a uint64 integer.
+
+
+## Notes
+
+### Toggle Panel
+
+* The toggle panel creates one TTL event channel per bank, with one virtual
+channel per bit.
+
+### Front Panel
+
+* The front panel concatenates all input TTL channels and maps the resulting
+unified bit series to the front panel display.
 
 
 

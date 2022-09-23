@@ -28,10 +28,10 @@ namespace TTLDebugTools
 		AudioProcessorEditor* createEditor() override;
 
 		// Rebuild external configuration information.
-		// NOTE - We're making event channels here, not in createEventChannels().
+		// This is where we detect input geometry, for the front panel.
 		void updateSettings() override;
 
-		// We still need createEventChannels() as a hook.
+		// Generate a list of TTL output channels, for the toggle panel.
 		void createEventChannels() override;
 
 		// Initialization.
@@ -73,6 +73,7 @@ namespace TTLDebugTools
 		Array<bool> bankEnabled;
 		Array<bool> needUpdate;
 		Array<bool> bitValue;
+		Array<const EventChannel*> bankEventChannels;
 
 	private:
 		JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(TTLPanelBase);

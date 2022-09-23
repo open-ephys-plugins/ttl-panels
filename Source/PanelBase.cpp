@@ -33,6 +33,9 @@ T_PRINT("Constructor called.");
     bitValue.clear();
     bitValue.insertMultiple(0, false, TTLDEBUG_PANEL_TOTAL_BITS);
 
+    bankEventChannels.clear();
+    bankEventChannels.insertMultiple(0, NULL, TTLDEBUG_PANEL_MAX_BANKS);
+
     // NOTE Per Josh, we need to set the processor type here in addition to
     // reporting it from getLibInfo().
     if (wantSource)
@@ -60,23 +63,60 @@ T_PRINT("Creating editor.");
 
 
 // Rebuild external configuration information.
-// NOTE - We're making event channels here, not in createEventChannels().
+// This is where we detect input geometry, for the front panel.
 void TTLPanelBase::updateSettings()
 {
-    // Enumerate channels here.
-    // If we're a source, enumerate outputs based on which banks are enabled.
     // If we're a sink, enable banks based on how many inputs we have.
 
 T_PRINT("updateSettings() called.");
-// FIXME - updateSettings() NYI.
+
+    if (!isTTLSource)
+    {
+        // Detect TTL inputs.
+        // FIXME - TTL input channels NYI.
+    }
 }
 
 
-// We still need createEventChannels() as a hook.
+// Generate a list of TTL output channels, for the toggle panel.
 void TTLPanelBase::createEventChannels()
 {
 T_PRINT("createEventChannels() called.");
-// FIXME - createEventChannels() NYI.
+
+    if (isTTLSource)
+    {
+        // Create TTL outputs.
+        // One event channel per bank, with one virtual channel per bit.
+        // Note that "length" for TTL channels is 1. This is not the payload size.
+
+        bankEventChannels.clear();
+        bankEventChannels.insertMultiple(0, NULL, TTLDEBUG_PANEL_MAX_BANKS);
+
+        for (int bankIdx = 0; bankIdx < TTLDEBUG_PANEL_MAX_BANKS; bankIdx++)
+            if (bankEnabled[bankIdx])
+            {
+                EventChannel *thisEv;
+                thisEv = new EventChannel(EventChannel::TTL, TTLDEBUG_PANEL_BANK_BITS, 1, -1, this);
+
+                std::string thisName = "Toggle bank ";
+                thisName += std::to_string(bankIdx);
+                thisEv->setName(thisName);
+
+                thisName += " (bits ";
+                thisName += std::to_string(bankIdx * TTLDEBUG_PANEL_BANK_BITS);
+                thisName += " - ";
+                thisName += std::to_string(bankIdx * TTLDEBUG_PANEL_BANK_BITS + TTLDEBUG_PANEL_BANK_BITS - 1);
+                thisName += ").";
+                thisEv->setDescription(thisName);
+
+                thisName = "ttlpanel.toggle.bank";
+                thisName += std::to_string(bankIdx);
+                thisEv->setIdentifier(thisName);
+
+                eventChannelArray.add(thisEv);
+                bankEventChannels.set(bankIdx, thisEv);
+            }
+    }
 }
 
 
@@ -105,13 +145,46 @@ void TTLPanelBase::process(AudioSampleBuffer& buffer)
     // If we're a source, report queued changes to TTL output state.
     // If we're a sink, input events will be received via handleEvent().
 
+// Don't tattle this except for debugging; it gets spammy.
+//T_PRINT("process() called.");
+
     // Update UI state.
     // The editor shouldn't ask for this while running, to avoid race conditions.
     pushStateToDisplay();
 
-// Don't tattle this except for debugging; it gets spammy.
-//T_PRINT("process() called.");
-// FIXME - process() NYI.
+    // Generate state change events.
+    if (isTTLSource)
+        for (int bankIdx = 0; bankIdx < TTLDEBUG_PANEL_MAX_BANKS; bankIdx++)
+            if (bankEnabled[bankIdx])
+            {
+                const EventChannel *thisBankEvChannel = bankEventChannels[bankIdx];
+                juce::int64 thisTimestamp = CoreServices::getGlobalTimestamp();
+                // NOTE - Keeping sample numberas 0 is fine.
+                // This is relative to the start of the buffer fragment in this polling interval.
+                int thisSampleNum = 0;
+
+                // NOTE - We can be asked to generate events before updateSettings() finishes setting up channels.
+                if (NULL != thisBankEvChannel)
+                {
+                    int bitBase = bankIdx * TTLDEBUG_PANEL_BANK_BITS;
+                    for (int bitIdx = 0; bitIdx < TTLDEBUG_PANEL_BANK_BITS; bitIdx++)
+                        if (needUpdate[bitBase + bitIdx])
+                        {
+                            uint64 dataValue = 1;
+                            dataValue <<= bitIdx;
+                            if (!bitValue[bitBase + bitIdx])
+                                dataValue = 0;
+
+                            TTLEventPtr thisEv = TTLEvent::createTTLEvent(thisBankEvChannel, thisTimestamp, &dataValue, sizeof(dataValue), bitIdx);
+                            addEvent(thisBankEvChannel, thisEv, thisSampleNum);
+                        }
+                }
+                else
+                {
+                    // FIXME - Diagnostics.
+                    T_PRINT("NULL pointer for bank " << bankIdx << " events.");
+                }
+            }
 }
 
 
@@ -142,7 +215,11 @@ T_PRINT( "setParameter() called setting " << parameterIndex << " to: " << newVal
         // Setting or clearing a "bank enabled" flag.
         parameterIndex -= TTLDEBUG_PANEL_PARAM_BASE_ENABLED;
         if ((parameterIndex >= 0) && (parameterIndex <= TTLDEBUG_PANEL_MAX_BANKS))
+        {
             bankEnabled.set( parameterIndex, (newValue > 0) );
+            // Propagate the change in the number of outputs.
+            CoreServices::updateSignalChain(editor);
+        }
         else
         { T_PRINT( "Bank index to enable/disable (" << parameterIndex << ") is out of range." ); }
     }
