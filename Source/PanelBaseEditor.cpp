@@ -156,7 +156,7 @@ void TTLPanelEditorRow::buttonClicked(Button* theButton)
     {
         // Bit button.
         int bidx = (theButton->getButtonText()).getIntValue();
-        parent->setBitValue( bidx, !(parent->getBitValue(bidx)) );
+        parent->setBitValue( bidx, !(getAbsoluteBitValue(bidx)) );
     }
 }
 
@@ -290,6 +290,26 @@ void TTLPanelEditorRow::updateParentFromLabel(Label *theLabel)
     }
 
     // NOTE - Don't update GUI state or data. Let the parent plugin and timer callback do that.
+}
+
+
+// Private accessor for cached bit state.
+// Querying the parent while running isn't safe.
+bool TTLPanelEditorRow::getAbsoluteBitValue(int bitIdx)
+{
+    bool result = false;
+
+    // Convert absolute bit number to bit number within the bank.
+    bitIdx -= bankIdx * TTLDEBUG_PANEL_BANK_BITS;
+
+    if ((bitIdx >= 0) && (bitIdx < TTLDEBUG_PANEL_BANK_BITS))
+    {
+        if (bankDataValue & ( ((uint64) 1) << bitIdx ))
+            result = true;
+    }
+
+
+    return result;
 }
 
 

@@ -57,7 +57,7 @@ namespace TTLDebugTools
 
 		// Accessors for querying and modifying state.
 		// Modifying is done via setParameter, since that's guaranteed safe.
-		// NOTE - We're not calling query accessors any more!
+		// NOTE - Calling query accessors while running isn't safe!
 		bool isEventSourcePanel();
 		bool getBitValue(int bitNum);
 		void setBitValue(int bitNum, bool newState);

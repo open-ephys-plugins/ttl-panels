@@ -58,6 +58,10 @@ namespace TTLDebugTools
 		ScopedPointer<UtilityButton> enableButton;
 		ScopedPointer<Label> hexLabel, decLabel, hexTitle, decTitle;
 
+		// Private accessor for cached bit state.
+		// Querying the parent while running isn't safe.
+		bool getAbsoluteBitValue(int bitIdx);
+
 		JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(TTLPanelEditorRow);
 	};
 
