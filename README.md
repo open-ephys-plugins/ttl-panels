@@ -31,13 +31,18 @@ internally storing output state as a uint64 integer.
 
 ### Toggle Panel
 
-* The toggle panel creates one TTL event channel per bank, with one virtual
-channel per bit.
+* The toggle panel creates one physical TTL event channel per bank, with one
+virtual channel per bit.
 
 ### Front Panel
 
-* The front panel concatenates all input TTL channels and maps the resulting
-unified bit series to the front panel display.
+* Any given bank shows data from only one physical input channel.
+
+  For example, if there are two physical input channels with two and three
+virtual bit channels (respectively), the first bank will show the first
+channel's bits as its 2 least-significant bits, with the remaining positions
+off, and the second bank will show the second channel's bits as its 3
+least-significant bits, with the remaining positions off.
 
 
 
