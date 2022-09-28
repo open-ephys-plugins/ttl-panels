@@ -177,7 +177,7 @@ void TTLPanelEditorRow::setDataState(bool wantEnabled, uint64 newDataValue)
     isBankEnabled = wantEnabled;
     bankDataValue = newDataValue;
 
-// FIXME - Diagnostics. Very spammy.
+// Diagnostics. Very spammy.
 //T_PRINT("Bank " << bankIdx << " set to " << (wantEnabled ? "On" : "Off") << " data: " << newDataValue);
 }
 
@@ -206,7 +206,7 @@ void TTLPanelEditorRow::updateGUIFromData(uint64 datavalue)
         }
 
         // Hex label.
-        // FIXME - The cleaner way requires C++20. Do it the old dirty way.
+        // NOTE - The cleaner way requires C++20. Do it the old dirty way.
         std::stringstream hexscratch;
         hexscratch << std::hex << datavalue;
         if (!( hexLabel->isBeingEdited() ))
@@ -254,7 +254,7 @@ void TTLPanelEditorRow::updateGUIEnabledState(bool wantBankEnabled, bool wantEnB
 // GUI redraw entry point.
 void TTLPanelEditorRow::refreshDisplay(bool isRunning)
 {
-// FIXME - Diagnostics. Spammy.
+// Diagnostics. Spammy.
 //T_PRINT("Refresh bank " << bankIdx << (isBankEnabled ? " (On)" : " (Off)") << (isTTLSource ? " (Source)" : " (Display)") << " data: " << bankDataValue);
     // Update the display state.
     // When we're running, lock out the bank enable/disable buttons.
@@ -373,7 +373,7 @@ TTLPanelBaseEditor::~TTLPanelBaseEditor()
 // Timer callback.
 void TTLPanelBaseEditor::timerCallback()
 {
-    // FIXME - Pull data if not running.
+    // Pull data if not running.
     // If we're running, let process() push it to avoid race conditions.
     // Check the "acquisitionIsActive" state variable from GenericEditor.
     if (!acquisitionIsActive)
@@ -410,7 +410,7 @@ void TTLPanelBaseEditor::redrawAllBanks()
     for (int bidx = 0; bidx < TTLDEBUG_PANEL_MAX_BANKS; bidx++)
         banks[bidx]->refreshDisplay(acquisitionIsActive);
 
-    // FIXME - Force a manual repaint. Otherwise colorbutton doesn't change while under mouse focus.
+    // Force a manual repaint. Otherwise colorbutton doesn't change while under mouse focus.
     repaint();
 }
 
