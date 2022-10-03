@@ -52,7 +52,7 @@ namespace TTLDebugTools
 
 		// XML configuration hooks.
 		void saveCustomParametersToXml(XmlElement* parentElement);
-		void loadCustomParametersFromXml(XmlElement* parentElement);
+		void loadCustomParametersFromXml();
 
 
 		// Accessors for querying and modifying state.

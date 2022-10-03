@@ -318,15 +318,55 @@ T_PRINT("saveCustomParametersToXml() called.");
       parentElement->setAttribute("Type", "TTLTogglePanel");
     else
       parentElement->setAttribute("Type", "TTLFrontPanel");
-// FIXME - saveCustomParametersToXml() NYI.
+
+    // Front panel configuration gets rebuilt by updateSettings, so only save toggle panel configuration.
+    if (isTTLSource)
+    {
+        // isTTLSource gets set by the constructor and is implied by "Type".
+        // So, just save bankEnabled and bitValue.
+
+        for (int bidx = 0; bidx < TTLDEBUG_PANEL_MAX_BANKS; bidx++)
+        {
+            XmlElement *bankElement = parentElement->createNewChildElement("Bank");
+            bankElement->setAttribute("Number", bidx);
+            bankElement->setAttribute("Enabled", (bankEnabled[bidx] ? 1 : 0));
+        }
+
+        for (int bidx = 0; bidx < TTLDEBUG_PANEL_TOTAL_BITS; bidx++)
+        {
+            XmlElement *bankElement = parentElement->createNewChildElement("Bit");
+            bankElement->setAttribute("Number", bidx);
+            bankElement->setAttribute("State", (bitValue[bidx] ? 1 : 0));
+        }
+    }
 }
 
 
 // XML configuration loading.
-void TTLPanelBase::loadCustomParametersFromXml(XmlElement* parentElement)
+// NOTE - This reads from the "parametersAsXml" variable, rather than passing an argument.
+void TTLPanelBase::loadCustomParametersFromXml()
 {
 T_PRINT("loadCustomParametersFromXml() called.");
-// FIXME - loadCustomParametersFromXml() NYI.
+
+    // Front panel configuration gets rebuilt by updateSettings, so only load toggle panel configuration.
+    if (isTTLSource)
+    {
+        // The only toggle panel variables to set are bankEnabled and bitValue.
+
+        forEachXmlChildElementWithTagName(*parametersAsXml, bankElement, "Bank")
+        {
+            int bidx = bankElement->getIntAttribute("Number");
+            bool isEnabled = bankElement->getBoolAttribute("Enabled");
+            bankEnabled.set(bidx, isEnabled);
+        }
+
+        forEachXmlChildElementWithTagName(*parametersAsXml, bankElement, "Bit")
+        {
+            int bidx = bankElement->getIntAttribute("Number");
+            bool isHigh = bankElement->getBoolAttribute("State");
+            bitValue.set(bidx, isHigh);
+        }
+    }
 }
 
 
