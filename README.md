@@ -8,22 +8,24 @@ This plugin offers a set of widgets to make TTL event debugging easier:
 
 * A front panel display shows the current state of TTL inputs.
 
-* **(NYI)** A pattern generator allows sequences of pulses or words to be
+Planned but not implemented yet:
+
+* _(NYI)_ A pattern generator allows sequences of pulses or words to be
 generated.
 
-* **(NYI)** A logic analyzer display allows TTL waveforms or code sequences
+* _(NYI)_ A logic analyzer display allows TTL waveforms or code sequences
 to be viewed on a strip-chart.
 
 
 ## Limitations
 
 * The toggle panel and front panel are not visualizers; they're limited to
-a small number of channels (32), to allow display in the plugin bar.
+a small number of TTL channels (32), to allow display in the plugin bar.
 
 * The number of bits per bank in the toggle panel and front panel is limited
 to 64, due to internally storing bank state as a uint64 integer.
 
-* **(NYI)** The pattern generator only supports up to 64 outputs, due to
+* _(NYI)_ The pattern generator only supports up to 64 outputs, due to
 internally storing output state as a uint64 integer.
 
 

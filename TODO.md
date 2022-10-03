@@ -8,19 +8,34 @@ clicking bit buttons. Add a combo box or cycling button for pulse length
 
   _Note: This will involve making the plugin schedule future events._
 
-* Maybe allow a large windowed version?
+  _The easy way to do this is to add a "countdown" array. Clicking in pulse
+mode toggles the state, then sets a countdown for toggling the state a second
+time._
+
+* Let the user group banks, and have each group of banks start at bit 0.
+Bank groups get letters to identify them.
+
+  Right now, we have one bank per row, treated as a separate TTL event
+stream for each bank. With 8-bit banks, we can't get 16-bit output, for
+example.
+
+* Move everything that's _not_ shared into the child class, rather than
+having a do-everything parent class.
 
 
 ## Front Panel
 
-* Redo the front panel display to use boxes instead of buttons for bits.
+* Visually indicate which banks are grouped together (i.e. which banks
+correspond to the same input stream). Have each group of banks start at
+bit 0, and give bank groups letters to identify them.
 
-* Maybe allow a large windowed version?
+* Move everything that's _not_ shared into the child class, rather than
+having a do-everything parent class.
 
 
 ## Pattern Generator
 
-* NYI.
+* NYI; planned future widget.
 
 * This should be able to group bits arbitrarily, and to schedule repeating
 patterns of output words for each group.
@@ -39,7 +54,7 @@ falling-edge for two continuous and two one-shot cases).
 
 ## Logic Analyzer
 
-* NYI.
+* NYI; planned future widget.
 
 * This should be able to group bits arbitrarily, and to parse grouped bits
 into signed or unsigned words.
