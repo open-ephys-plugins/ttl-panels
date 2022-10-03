@@ -417,10 +417,7 @@ void TTLPanelBaseEditor::redrawAllBanks()
 
 
 //
-// Canvas holding a large number of TTL banks.
-
-// FIXME - Canvas NYI.
-// For the canvas, render controls and text a bit bigger, too.
+// NOTE - Visualizer canvas holding a large number of TTL banks could go here.
 
 
 // This is the end of the file.
