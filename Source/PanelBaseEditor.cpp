@@ -34,7 +34,7 @@ using namespace TTLDebugTools;
 
 
 // Diagnostic tattle macros.
-#define TTLEDITTATTLE
+//#define TTLEDITTATTLE
 #ifdef TTLEDITTATTLE
 #define T_DEBUG(x) do { x } while(false);
 #else
