@@ -13,7 +13,7 @@
 #define TTLDEBUG_PANEL_BITONE_COLOR juce::Colours::lime
 
 // Magic constants for display refresh.
-#define TTLDEBUG_PANEL_DISPLAY_REFRESH_MS 100
+#define TTLDEBUG_PANEL_DISPLAY_REFRESH_MS 50
 
 namespace TTLDebugTools
 {
@@ -70,11 +70,17 @@ namespace TTLDebugTools
 		/** Button callback*/
 		void buttonClicked(Button* button);
 
+		/** Called when selected stream is updated */
+		void selectedStreamHasChanged() override;
+
 		/** The plugin has to push data to us, rather than us pulling it. */
 		void pushStateToEditor(std::map<uint16, uint32> currentTTLWord);
 
 		/** Redraws TTL indicators*/
 		void redrawAllButtons();
+
+		/** Gets the relevant parameter from the parent */
+		IntParameter* getTTLWordParameter();
 
 	private:
 		TTLPanelBase* parent;
