@@ -18,84 +18,82 @@ namespace TTLDebugTools
 	class TTLPanelBase : public GenericProcessor
 	{
 	public:
-		// Constructor and destructor.
-		// Set "wantSource" true to make this a toggle panel (source), or false for a front panel (sink).
+		/** Constructor.
+			Set "wantSource" true to make this a toggle panel (filter), or false for a front panel (sink) */
 		TTLPanelBase(const std::string &name, bool wantSource);
+
+		/** Destructor */
 		~TTLPanelBase();
 
-		// We do have a custom editor.
-		bool hasEditor() const { return true; }
+		/** Create custom editor */
 		AudioProcessorEditor* createEditor() override;
 
-		// Rebuild external configuration information.
-		// This is where we detect input geometry, for the front panel.
+		/** Create event channels */
 		void updateSettings() override;
 
-		// Generate a list of TTL output channels, for the toggle panel.
-		void createEventChannels() override;
-
-		// Initialization.
-		bool enable() override;
-
-		// Accessor for go/no-go.
-		bool isReady() override;
-
-		// Processing loop.
-		void process(AudioSampleBuffer& buffer) override;
+		/** Processing loop. */
+		void process(AudioBuffer<float>& buffer) override;
 
 		// If we're configured as a front panel, we need to handle events.
-		void handleEvent(const EventChannel* eventInfo, const MidiMessage& event, int samplePosition) override;
+		void handleTTLEvent(TTLEventPtr event) override;
 
 		// This is guaranteed to be called under safe conditions.
 		// Variables used by "process" should only be modified here.
-		void setParameter(int parameterIndex, float newValue) override;
-
-		// XML configuration hooks.
-		void saveCustomParametersToXml(XmlElement* parentElement);
-		void loadCustomParametersFromXml();
-
+		void parameterValueChanged(Parameter* parameter) override;
 
 		// Accessors for querying and modifying state.
-		// Modifying is done via setParameter, since that's guaranteed safe.
+		// Modifying is done via parameterValueChanged, since that's guaranteed safe.
 		// NOTE - Calling query accessors while running isn't safe!
 		bool isEventSourcePanel();
-		bool getBitValue(int bitNum);
-		void setBitValue(int bitNum, bool newState);
-		bool isBankEnabled(int bankNum);
-		void setBankEnabled(int bankNum, bool wantEnabled);
 
-		// This propagates state to the display.
-		// It's called by process() and can also be called manually.
+		// Updates the display with latest state.
 		void pushStateToDisplay();
 
 	protected:
 		bool isTTLSource;
-		Array<bool> bankEnabled;
-		Array<bool> needUpdate;
-		Array<bool> bitValue;
-		Array<const EventChannel*> bankEventChannels;
-		Array<int> inputBankOffsets;
+		std::map<uint16, uint32> currentTTLWord;
+		std::map<uint16, uint32> lastTTLWord;
+		std::map<uint16, EventChannel*> localEventChannels;
 
 	private:
 		JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(TTLPanelBase);
 	};
 
-
+	/** 
+		Creates an array of buttons to toggle TTL events on and off
+	*/
 	class TTLTogglePanel : public TTLPanelBase
 	{
 	public:
+		
+		/** Constructor */
 		TTLTogglePanel();
+		
+		/** Destructor */
 		~TTLTogglePanel();
+
+		
 	private:
+
 		JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(TTLTogglePanel);
 	};
 
-
+	/** 
+	
+		Creates an array of indicators to show the state of individual TTL lines
+		
+	*/
 	class TTLFrontPanel : public TTLPanelBase
 	{
 	public:
+
+		/** Constructor */
 		TTLFrontPanel();
+
+		/** Destructor*/
 		~TTLFrontPanel();
+
+		
 	private:
 		JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(TTLFrontPanel);
 	};

@@ -4,8 +4,8 @@
 #include <EditorHeaders.h>
 
 // Magic constants for GUI geometry.
-#define TTLDEBUG_PANEL_UI_MAX_ROWS 4
-#define TTLDEBUG_PANEL_UI_MAX_COLS 1
+#define TTLDEBUG_PANEL_UI_MAX_BUTTONS 32
+#define TTLDEBUG_PANEL_UI_BUTTONS_PER_ROW 8
 
 // Magic constants for GUI colours.
 #define TTLDEBUG_PANEL_DISABLED_COLOR juce::Colours::transparentWhite
@@ -13,82 +13,78 @@
 #define TTLDEBUG_PANEL_BITONE_COLOR juce::Colours::lime
 
 // Magic constants for display refresh.
-#define TTLDEBUG_PANEL_DISPLAY_REFRESH_MS 20
+#define TTLDEBUG_PANEL_DISPLAY_REFRESH_MS 100
 
 namespace TTLDebugTools
 {
 	class TTLPanelBase;
 
-
-	// One bank of TTLs with associated controls.
-	// Maximum 64 bits per bank.
-	class TTLPanelEditorRow : public Component, Button::Listener, Label::Listener
+	// One TTL toggle button
+	class TTLPanelButton : public Button
 	{
 	public:
-		// Constructor and destructor.
-		TTLPanelEditorRow(TTLPanelBase* newParent, int newBankIdx);
-		~TTLPanelEditorRow();
+		// Constructor
+		TTLPanelButton(int line, Colour colour);
 
-		// GUI callbacks.
-		// These push state changes to the plugin directly.
-		void buttonClicked(Button* theButton);
-		void labelTextChanged(Label* theLabel);
+		// Destructor
+		~TTLPanelButton();
 
-		// Accessors.
+		// Returns the ttl line
+		int getLine() {
+			return line;
+		}
 
-		// NOTE - the plugin has to push data to us, rather than us pulling it.
-		void setDataState(bool wantEnabled, uint64 newDataValue);
-
-		// GUI accessors.
-		void updateGUIFromData(uint64 datavalue);
-		void updateGUIEnabledState(bool wantBankEnabled, bool wantEnButtonEnabled);
-		void refreshDisplay(bool isRunning);
-
-                // NOTE - This sets parent bits one at a time, which may be expensive.
-		void updateParentFromLabel(Label *theLabel);
-
+		// Draw the button
+		void paintButton(Graphics& g, bool isHighlighted, bool isDown);
+		
 	private:
-		TTLPanelBase* parent;
-		int bankIdx;
-		bool isTTLSource;
-		bool isBankEnabled;
-		uint64 bankDataValue;
+		int line;
+		Colour colour;
 
-		OwnedArray<ColorButton> bitButtons;
-		ScopedPointer<UtilityButton> enableButton;
-		ScopedPointer<Label> hexLabel, decLabel, hexTitle, decTitle;
-
-		// Private accessor for cached bit state.
-		// Querying the parent while running isn't safe.
-		bool getAbsoluteBitValue(int bitIdx);
-
-		JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(TTLPanelEditorRow);
+		JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(TTLPanelButton);
 	};
 
 
 	// GUI tray holding a small number of TTL banks.
 	// NOTE - GenericEditor already inherits from Timer.
-	class TTLPanelBaseEditor : public GenericEditor
+	class TTLPanelBaseEditor : public GenericEditor,
+							   public Button::Listener,
+							   public Timer
 	{
 	public:
-		// Constructor and destructor.
+		/** Constructor */
 		TTLPanelBaseEditor(TTLPanelBase* newParent);
+
+		/** Destructor */
 		~TTLPanelBaseEditor();
 
-		// Plugin hooks.
-		// NOTE - updateSettings() would go here if we needed it.
-
-		// Timer hooks.
+		/** Timer hooks */
 		void timerCallback();
 
-		// Accessors.
-		// NOTE - The plugin has to push data to us, rather than us pulling it.
-		void pushStateToEditor(Array<bool>& parentBankEnabled, Array<bool>& parentBitValues);
-		void redrawAllBanks();
+		/** Called at start of acquisition*/
+		void startAcquisition() override;
+
+		/** Called at start of acquisition*/
+		void stopAcquisition() override;
+
+		/** Button callback*/
+		void buttonClicked(Button* button);
+
+		/** The plugin has to push data to us, rather than us pulling it. */
+		void pushStateToEditor(std::map<uint16, uint32> currentTTLWord);
+
+		/** Redraws TTL indicators*/
+		void redrawAllButtons();
 
 	private:
 		TTLPanelBase* parent;
-		OwnedArray<TTLPanelEditorRow> banks;
+		OwnedArray<TTLPanelButton> buttons;
+		std::unique_ptr<Label> ttlWordLabel;
+		std::unique_ptr<Label> editableLabel;
+		std::unique_ptr<UtilityButton> setButton;
+		std::unique_ptr<UtilityButton> clearButton;
+		std::map<uint16, uint32> currentTTLWord;
+		std::map<uint16, uint32> lastTTLWord;
 
 		JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(TTLPanelBaseEditor);
 	};

@@ -43,10 +43,10 @@ extern "C" EXPORT void getLibInfo(Plugin::LibraryInfo* info)
 	info->apiVersion = PLUGIN_API_VER;
 
 	//Name of the Library, used only for information
-	info->name = "TTL Debug Tools";
+	info->name = "TTL Panels";
 
 	//Version of the library, used only for information
-	info->libVersion = 1;
+	info->libVersion = "0.1.0";
 	info->numPlugins = NUM_PLUGINS;
 }
 
@@ -57,22 +57,22 @@ extern "C" EXPORT int getPluginInfo(int index, Plugin::PluginInfo* info)
 		//one case per plugin.
 	case 0:
 		// Sources, sinks, and visualizers are all "processors".
-		info->type = PluginType::PLUGIN_TYPE_PROCESSOR;
+		info->type = Plugin::Type::PROCESSOR;
 		//Processor name shown in the GUI.
 		info->processor.name = "TTL Toggle Panel";
 		//Type of processor.
-		info->processor.type = ProcessorType::SourceProcessor;
+		info->processor.type = Plugin::Processor::FILTER;
 		//Class factory pointer. Namespace and class name.
 		info->processor.creator = &(Plugin::createProcessor<TTLDebugTools::TTLTogglePanel>);
 		break;
 
 	case 1:
 		// Sources, sinks, and visualizers are all "processors".
-		info->type = PluginType::PLUGIN_TYPE_PROCESSOR;
+		info->type = Plugin::Type::PROCESSOR;
 		//Processor name shown in the GUI.
-		info->processor.name = "TTL Front Panel";
+		info->processor.name = "TTL Display Panel";
 		//Type of processor.
-		info->processor.type = ProcessorType::SinkProcessor;
+		info->processor.type = Plugin::Processor::SINK;
 		//Class factory pointer. Namespace and class name.
 		info->processor.creator = &(Plugin::createProcessor<TTLDebugTools::TTLFrontPanel>);
 		break;
