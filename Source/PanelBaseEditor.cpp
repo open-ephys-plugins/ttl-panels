@@ -1,6 +1,7 @@
 #include "PanelBaseEditor.h"
 #include "PanelBase.h"
 #include <sstream>
+#include <climits>
 
 using namespace TTLDebugTools;
 
