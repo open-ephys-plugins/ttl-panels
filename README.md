@@ -1,8 +1,8 @@
 # TTL Panels
 
-## Overview
+![ttl-panels-screenshot](https://open-ephys.github.io/gui-docs/_images/ttlpanels-01.png)
 
-This plugin offers a set of widgets to make TTL event debugging easier:
+This is an Open Ephys GUI plugin that offers a set of widgets to make TTL event debugging easier:
 
 * A toggle panel manually generates TTL events.
 
@@ -11,24 +11,16 @@ This plugin offers a set of widgets to make TTL event debugging easier:
 
 ## Installation
 
-This plugin will soon be available via the Open Ephys GUI Plugin Installer. To access the Plugin Installer, press **ctrl-P** or **⌘P** from inside the GUI. Once the installer is loaded, browse to the "TTL Panels" plugin and click "Install."
-
-
-## Development history
-
-This plugin was originally developed by Christopher Thomas in the Womelsdorf Laboratory at Vanderbilt University. The original repository can be found at https://github.com/att-circ-contrl/PluginTTLDebug
+These plugins can be added via the Open Ephys GUI's built-in Plugin Installer. Press **ctrl-P** or **⌘P** to open the Plugin Installer, browse to "TTL Panels", and click the "Install" button. The TTL Panels plugin should now be available to use.
 
 
 ## Usage
 
-### Toggle Panel
-
-* The toggle panel creates 32 buttons that can be toggled to change the state of TTL lines on each incoming data stream. There is also a text box for manually entering the next TTL word.
+Instructions for using the TTL Panels plugin are available [here](https://open-ephys.github.io/gui-docs/User-Manual/Plugins/TTL-Panels.html).
 
 ### Display Panel
 
 * The display panel passively displays the state of 32 TTL lines on each incoming data stream, as well as the most recent TTL word.
-
 
 
 ## Building from source
@@ -94,3 +86,7 @@ cmake -G "Xcode" ..
 Next, launch Xcode and open the `ttl-panels.xcodeproj` file that now lives in the “Build” directory.
 
 Running the `ALL_BUILD` scheme will compile the plugin; running the `INSTALL` scheme will install the `.bundle` file to `/Users/<username>/Library/Application Support/open-ephys/plugins-api8`. The TTL Toggle Panel and TTL Display Panel plugins should be available the next time you launch the GUI from Xcode.
+
+## Attribution
+
+This plugin was originally developed by Christopher Thomas in the Womelsdorf Laboratory at Vanderbilt University. The original repository can be found at https://github.com/att-circ-contrl/PluginTTLDebug
