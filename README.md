@@ -18,10 +18,6 @@ These plugins can be added via the Open Ephys GUI's built-in Plugin Installer. P
 
 Instructions for using the TTL Panels plugin are available [here](https://open-ephys.github.io/gui-docs/User-Manual/Plugins/TTL-Panels.html).
 
-### Display Panel
-
-* The display panel passively displays the state of 32 TTL lines on each incoming data stream, as well as the most recent TTL word.
-
 
 ## Building from source
 
