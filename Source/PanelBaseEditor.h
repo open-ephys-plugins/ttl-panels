@@ -17,86 +17,85 @@
 
 namespace TTLDebugTools
 {
-	class TTLPanelBase;
+class TTLPanelBase;
 
-	// One TTL toggle button
-	class TTLPanelButton : public Button
-	{
-	public:
-		// Constructor
-		TTLPanelButton(int line, Colour colour);
+// One TTL toggle button
+class TTLPanelButton : public Button
+{
+public:
+    // Constructor
+    TTLPanelButton (int line, Colour colour);
 
-		// Destructor
-		~TTLPanelButton();
+    // Destructor
+    ~TTLPanelButton();
 
-		// Returns the ttl line
-		int getLine() {
-			return line;
-		}
+    // Returns the ttl line
+    int getLine()
+    {
+        return line;
+    }
 
-		// Draw the button
-		void paintButton(Graphics& g, bool isHighlighted, bool isDown);
-		
-	private:
-		int line;
-		Colour colour;
+    // Draw the button
+    void paintButton (Graphics& g, bool isHighlighted, bool isDown);
 
-		JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(TTLPanelButton);
-	};
+private:
+    int line;
+    Colour colour;
 
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (TTLPanelButton);
+};
 
-	// GUI tray holding a small number of TTL banks.
-	// NOTE - GenericEditor already inherits from Timer.
-	class TTLPanelBaseEditor : public GenericEditor,
-							   public Button::Listener,
-							   public Timer
-	{
-	public:
-		/** Constructor */
-		TTLPanelBaseEditor(TTLPanelBase* newParent);
+// GUI tray holding a small number of TTL banks.
+// NOTE - GenericEditor already inherits from Timer.
+class TTLPanelBaseEditor : public GenericEditor,
+                           public Button::Listener,
+                           public Timer
+{
+public:
+    /** Constructor */
+    TTLPanelBaseEditor (TTLPanelBase* newParent);
 
-		/** Destructor */
-		~TTLPanelBaseEditor();
+    /** Destructor */
+    ~TTLPanelBaseEditor();
 
-		/** Timer hooks */
-		void timerCallback();
+    /** Timer hooks */
+    void timerCallback();
 
-		/** Called at start of acquisition*/
-		void startAcquisition() override;
+    /** Called at start of acquisition*/
+    void startAcquisition() override;
 
-		/** Called at start of acquisition*/
-		void stopAcquisition() override;
+    /** Called at start of acquisition*/
+    void stopAcquisition() override;
 
-		/** Button callback*/
-		void buttonClicked(Button* button);
+    /** Button callback*/
+    void buttonClicked (Button* button);
 
-		/** Called when selected stream is updated */
-		void selectedStreamHasChanged() override;
+    /** Called when selected stream is updated */
+    void selectedStreamHasChanged() override;
 
-		/** The plugin has to push data to us, rather than us pulling it. */
-		void pushStateToEditor(std::map<uint16, uint32> currentTTLWord);
+    /** The plugin has to push data to us, rather than us pulling it. */
+    void pushStateToEditor (std::map<uint16, uint32> currentTTLWord);
 
-		/** Redraws TTL indicators*/
-		void redrawAllButtons();
+    /** Redraws TTL indicators*/
+    void redrawAllButtons();
 
-		/** Gets the relevant parameter from the parent */
-		IntParameter* getTTLWordParameter();
+    /** Gets the relevant parameter from the parent */
+    IntParameter* getTTLWordParameter();
 
-	private:
-		TTLPanelBase* parent;
-		OwnedArray<TTLPanelButton> buttons;
-		std::unique_ptr<Label> ttlWordLabel;
-		std::unique_ptr<CustomTextBox> editableLabel;
-		std::unique_ptr<UtilityButton> setButton;
-		std::unique_ptr<UtilityButton> clearButton;
-		std::map<uint16, uint32> currentTTLWord;
-		std::map<uint16, uint32> lastTTLWord;
+private:
+    TTLPanelBase* parent;
+    OwnedArray<TTLPanelButton> buttons;
+    std::unique_ptr<Label> ttlWordLabel;
+    std::unique_ptr<CustomTextBox> editableLabel;
+    std::unique_ptr<UtilityButton> setButton;
+    std::unique_ptr<UtilityButton> clearButton;
+    std::map<uint16, uint32> currentTTLWord;
+    std::map<uint16, uint32> lastTTLWord;
 
-		JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(TTLPanelBaseEditor);
-	};
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (TTLPanelBaseEditor);
+};
 
-
-	// NOTE - Visualizer canvas holding a large number of TTL banks could go here.
-}
+// NOTE - Visualizer canvas holding a large number of TTL banks could go here.
+} // namespace TTLDebugTools
 
 #endif

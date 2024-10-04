@@ -1,10 +1,9 @@
 #include "PanelBaseEditor.h"
 #include "PanelBase.h"
-#include <sstream>
 #include <climits>
+#include <sstream>
 
 using namespace TTLDebugTools;
-
 
 // Private magic constants for GUI geometry.
 
@@ -28,24 +27,19 @@ using namespace TTLDebugTools;
 #define NUMLABEL_XGAP 8
 #define NUMLABEL_XPITCH (NUMLABEL_XGAP + NUMLABEL_XTITLE + NUMLABEL_XSIZE)
 
-#define BUTTONROW_XSIZE_EN_NO (BITBUTTON_SLAB_XSIZE + 2*NUMLABEL_XPITCH)
+#define BUTTONROW_XSIZE_EN_NO (BITBUTTON_SLAB_XSIZE + 2 * NUMLABEL_XPITCH)
 #define BUTTONROW_XSIZE_EN_YES (ENBUTTON_XSIZE + ENBUTTON_XGAP + BUTTONROW_XSIZE_EN_NO)
 #define BUTTONROW_XHALO 10
-#define BUTTONROW_XPITCH_EN_NO (BUTTONROW_XSIZE_EN_NO + 2*BUTTONROW_XHALO)
-#define BUTTONROW_XPITCH_EN_YES (BUTTONROW_XSIZE_EN_YES + 2*BUTTONROW_XHALO)
-
+#define BUTTONROW_XPITCH_EN_NO (BUTTONROW_XSIZE_EN_NO + 2 * BUTTONROW_XHALO)
+#define BUTTONROW_XPITCH_EN_YES (BUTTONROW_XSIZE_EN_YES + 2 * BUTTONROW_XHALO)
 
 //
 // One bank of TTLs with associated controls.
 
-
 // Constructor.
-TTLPanelButton::TTLPanelButton(int line_, Colour colour_) :
-    Button(String(line)), line(line_), colour(colour_)
+TTLPanelButton::TTLPanelButton (int line_, Colour colour_) : Button (String (line)), line (line_), colour (colour_)
 {
-   
 }
-
 
 // Destructor.
 TTLPanelButton::~TTLPanelButton()
@@ -53,131 +47,122 @@ TTLPanelButton::~TTLPanelButton()
     // Nothing to do.
 }
 
-
 // GUI callbacks.
 
-void TTLPanelButton::paintButton(Graphics& g, bool isHighlighted, bool isDown)
+void TTLPanelButton::paintButton (Graphics& g, bool isHighlighted, bool isDown)
 {
-
     if (getToggleState())
-        g.setColour(colour);
+        g.setColour (colour);
     else
-        g.setColour(findColour (ThemeColours::widgetBackground));
+        g.setColour (findColour (ThemeColours::widgetBackground));
 
-	
-        
-    g.fillRect(0, 0, getWidth(), getHeight());
-    
-    g.setColour(findColour (ThemeColours::defaultText));
-	g.setFont(11.0f);
-    g.drawText(String(line + 1), Rectangle<float>(getWidth(), getHeight()), Justification::centred);
+    g.fillRect (0, 0, getWidth(), getHeight());
+
+    g.setColour (findColour (ThemeColours::defaultText));
+    g.setFont (11.0f);
+    g.drawText (String (line + 1), Rectangle<float> (getWidth(), getHeight()), Justification::centred);
 
     if (isHighlighted && getClickingTogglesState())
-        g.setColour(colour);
+        g.setColour (colour);
 
-    g.drawLine(0, getHeight(), getWidth(), getHeight(), 2.0);
-
+    g.drawLine (0, getHeight(), getWidth(), getHeight(), 2.0);
 }
-
 
 //
 // GUI tray holding a small number of TTL banks.
 
 // Constructor.
-TTLPanelBaseEditor::TTLPanelBaseEditor(TTLPanelBase* newParent) : GenericEditor(newParent)
+TTLPanelBaseEditor::TTLPanelBaseEditor (TTLPanelBase* newParent) : GenericEditor (newParent)
 {
     parent = newParent;
 
     Array<Colour> eventColours = {
-        Colour(224, 185, 36),
-        Colour(243, 119, 33),
-        Colour(237, 37, 36),
-        Colour(217, 46, 171),
-        Colour(101, 31, 255),
-        Colour(48, 117, 255),
-        Colour(116, 227, 156),
-        Colour(82, 173, 0)
+        Colour (224, 185, 36),
+        Colour (243, 119, 33),
+        Colour (237, 37, 36),
+        Colour (217, 46, 171),
+        Colour (101, 31, 255),
+        Colour (48, 117, 255),
+        Colour (116, 227, 156),
+        Colour (82, 173, 0)
     };
 
     for (int bidx = 0; bidx < TTLDEBUG_PANEL_UI_MAX_BUTTONS; bidx++)
     {
-
         int row = bidx / TTLDEBUG_PANEL_UI_BUTTONS_PER_ROW;
         int column = bidx % TTLDEBUG_PANEL_UI_BUTTONS_PER_ROW;
 
-        TTLPanelButton* button = new TTLPanelButton(bidx, eventColours[column]);
-        buttons.add(button);
+        TTLPanelButton* button = new TTLPanelButton (bidx, eventColours[column]);
+        buttons.add (button);
 
-		button->setBounds(BUTTONROW_XHALO + column * BITBUTTON_XPITCH,
-                          TITLEBAR_YOFFSET + row * BUTTONROW_YPITCH,
-                          BITBUTTON_XSIZE, BUTTONROW_YSIZE);
+        button->setBounds (BUTTONROW_XHALO + column * BITBUTTON_XPITCH,
+                           TITLEBAR_YOFFSET + row * BUTTONROW_YPITCH,
+                           BITBUTTON_XSIZE,
+                           BUTTONROW_YSIZE);
 
-        addAndMakeVisible(button);
+        addAndMakeVisible (button);
 
         if (parent->isEventSourcePanel())
-		{
-            button->setClickingTogglesState(true);
-			button->addListener(this);
+        {
+            button->setClickingTogglesState (true);
+            button->addListener (this);
         }
-        else {
-            button->setToggleState(false, dontSendNotification);
+        else
+        {
+            button->setToggleState (false, dontSendNotification);
         }
     }
 
-    setDesiredWidth(260);
+    setDesiredWidth (260);
 
-    editableLabel = std::make_unique<CustomTextBox>("TTL Word", "0", "0123456789", "");
-    editableLabel->setFont(FontOptions("CP Mono", "Plain", 14.0f));
-    editableLabel->setBounds(205, 50, 50, 18);
-    addAndMakeVisible(editableLabel.get());
-    editableLabel->onTextChange = [this] { editableLabel->setTooltip (editableLabel->getText());};
+    editableLabel = std::make_unique<CustomTextBox> ("TTL Word", "0", "0123456789", "");
+    editableLabel->setFont (FontOptions ("CP Mono", "Plain", 14.0f));
+    editableLabel->setBounds (205, 50, 50, 18);
+    addAndMakeVisible (editableLabel.get());
+    editableLabel->onTextChange = [this]
+    { editableLabel->setTooltip (editableLabel->getText()); };
 
-    ttlWordLabel = std::make_unique<Label>("Word Label", "Word");
-    ttlWordLabel->setFont(FontOptions("Inter", "Regular", 14.0f));
+    ttlWordLabel = std::make_unique<Label> ("Word Label", "Word");
+    ttlWordLabel->setFont (FontOptions ("Inter", "Regular", 14.0f));
     ttlWordLabel->setSize (50, 18);
     ttlWordLabel->attachToComponent (editableLabel.get(), false);
-    addAndMakeVisible(ttlWordLabel.get());
+    addAndMakeVisible (ttlWordLabel.get());
 
     if (parent->isEventSourcePanel())
     {
+        editableLabel->setEditable (true);
 
-        editableLabel->setEditable(true);
-        
-        setButton = std::make_unique<UtilityButton>("Set");
-        setButton->addListener(this);
-        setButton->setRadius(3.0f);
-        setButton->setBounds(210, 75, 40, 18);
-        addAndMakeVisible(setButton.get());
+        setButton = std::make_unique<UtilityButton> ("Set");
+        setButton->addListener (this);
+        setButton->setRadius (3.0f);
+        setButton->setBounds (210, 75, 40, 18);
+        addAndMakeVisible (setButton.get());
 
-        clearButton = std::make_unique<UtilityButton>("Clear");
-        clearButton->addListener(this);
-        clearButton->setRadius(3.0f);
-        clearButton->setBounds(210, 98, 40, 18);
-        addAndMakeVisible(clearButton.get());
+        clearButton = std::make_unique<UtilityButton> ("Clear");
+        clearButton->addListener (this);
+        clearButton->setRadius (3.0f);
+        clearButton->setBounds (210, 98, 40, 18);
+        addAndMakeVisible (clearButton.get());
     }
-    
-
 }
 
 // Destructor.
 TTLPanelBaseEditor::~TTLPanelBaseEditor()
 {
     // "OwnedArray" and "ScopedPointer" take care of de-allocation for us.
-
 }
 
 void TTLPanelBaseEditor::startAcquisition()
 {
-    if (!parent->isEventSourcePanel())
+    if (! parent->isEventSourcePanel())
     {
-        startTimer(TTLDEBUG_PANEL_DISPLAY_REFRESH_MS);
+        startTimer (TTLDEBUG_PANEL_DISPLAY_REFRESH_MS);
     }
-
 }
 
 void TTLPanelBaseEditor::stopAcquisition()
 {
-    if (!parent->isEventSourcePanel())
+    if (! parent->isEventSourcePanel())
     {
         stopTimer();
     }
@@ -188,85 +173,86 @@ void TTLPanelBaseEditor::selectedStreamHasChanged()
     redrawAllButtons();
 }
 
-void TTLPanelBaseEditor::buttonClicked(Button* button)
+void TTLPanelBaseEditor::buttonClicked (Button* button)
 {
-    if (buttons.contains((TTLPanelButton*) button))
+    if (buttons.contains ((TTLPanelButton*) button))
     {
-        TTLPanelButton* panelButton = (TTLPanelButton*)button;
+        TTLPanelButton* panelButton = (TTLPanelButton*) button;
 
         if (panelButton->getToggleState())
             currentTTLWord[getCurrentStream()] |= (1 << panelButton->getLine());
         else
             currentTTLWord[getCurrentStream()] &= ~(1 << panelButton->getLine());
 
-        LOGD("Current ttlWord: ", currentTTLWord[getCurrentStream()]);
+        LOGD ("Current ttlWord: ", currentTTLWord[getCurrentStream()]);
 
         IntParameter* ttlWordParam = getTTLWordParameter();
 
         if (ttlWordParam != nullptr)
         {
-            int64 valueI64 = int64(currentTTLWord[getCurrentStream()]);
-            int converted = int(valueI64 - INT_MAX);
-            ttlWordParam->setNextValue(var(converted), false);
+            int64 valueI64 = int64 (currentTTLWord[getCurrentStream()]);
+            int converted = int (valueI64 - INT_MAX);
+            ttlWordParam->setNextValue (var (converted), false);
         }
-        else {
-            LOGD("No parameter found.");
+        else
+        {
+            LOGD ("No parameter found.");
         }
 
-        editableLabel->setText(String(currentTTLWord[getCurrentStream()]), dontSendNotification);
+        editableLabel->setText (String (currentTTLWord[getCurrentStream()]), dontSendNotification);
     }
     else if (button == clearButton.get())
     {
         currentTTLWord[getCurrentStream()] = 0;
-        
+
         IntParameter* ttlWordParam = getTTLWordParameter();
-        
+
         if (ttlWordParam != nullptr)
         {
-            int64 valueI64 = int64(currentTTLWord[getCurrentStream()]);
-            int converted = int(valueI64 - INT_MAX);
-            ttlWordParam->setNextValue(var(converted), false);
+            int64 valueI64 = int64 (currentTTLWord[getCurrentStream()]);
+            int converted = int (valueI64 - INT_MAX);
+            ttlWordParam->setNextValue (var (converted), false);
         }
-        else {
-            LOGD("No parameter found.");
+        else
+        {
+            LOGD ("No parameter found.");
         }
 
         redrawAllButtons();
     }
     else if (button == setButton.get())
     {
-
         int candidateValue = editableLabel->getText().getIntValue();
-        
+
         if (candidateValue >= 0 && candidateValue < INT_MAX)
         {
-			currentTTLWord[getCurrentStream()] = candidateValue;
+            currentTTLWord[getCurrentStream()] = candidateValue;
 
-			IntParameter* ttlWordParam = getTTLWordParameter();
+            IntParameter* ttlWordParam = getTTLWordParameter();
 
-			if (ttlWordParam != nullptr)
-			{
-				int64 valueI64 = int64(currentTTLWord[getCurrentStream()]);
-				int converted = int(valueI64 - INT_MAX);
-				ttlWordParam->setNextValue(var(converted), false);
-			}
-			else {
-				LOGD("No parameter found.");
-			}
+            if (ttlWordParam != nullptr)
+            {
+                int64 valueI64 = int64 (currentTTLWord[getCurrentStream()]);
+                int converted = int (valueI64 - INT_MAX);
+                ttlWordParam->setNextValue (var (converted), false);
+            }
+            else
+            {
+                LOGD ("No parameter found.");
+            }
 
-			redrawAllButtons();
-		}
-		else {
-			LOGD("Invalid value.");
+            redrawAllButtons();
+        }
+        else
+        {
+            LOGD ("Invalid value.");
         }
     }
-    
-    
 }
 
 IntParameter* TTLPanelBaseEditor::getTTLWordParameter()
 {
-    return (IntParameter*)parent->getDataStream(getCurrentStream())->getParameter("ttl_word");
+    return (IntParameter*) parent->getDataStream (getCurrentStream())->getParameter ("ttl_word");
 }
 
 // Timer callback.
@@ -275,13 +261,11 @@ void TTLPanelBaseEditor::timerCallback()
     redrawAllButtons();
 }
 
-
 // Accessor to push plugin state to the editor.
-void TTLPanelBaseEditor::pushStateToEditor(std::map<uint16, uint32> currentTTLWord_)
+void TTLPanelBaseEditor::pushStateToEditor (std::map<uint16, uint32> currentTTLWord_)
 {
     currentTTLWord = currentTTLWord_;
 }
-
 
 // Redraw function. Should be called from the timer, not the plugin.
 void TTLPanelBaseEditor::redrawAllButtons()
@@ -293,18 +277,14 @@ void TTLPanelBaseEditor::redrawAllButtons()
 
     for (int bidx = 0; bidx < TTLDEBUG_PANEL_UI_MAX_BUTTONS; bidx++)
     {
-        buttons[bidx]->setToggleState((state >> bidx) & 1, dontSendNotification);
+        buttons[bidx]->setToggleState ((state >> bidx) & 1, dontSendNotification);
         buttons[bidx]->repaint();
     }
 
-	editableLabel->setText(String(currentTTLWord[getCurrentStream()]), dontSendNotification);
-        
+    editableLabel->setText (String (currentTTLWord[getCurrentStream()]), dontSendNotification);
 }
-
-
 
 //
 // NOTE - Visualizer canvas holding a large number of TTL banks could go here.
-
 
 // This is the end of the file.

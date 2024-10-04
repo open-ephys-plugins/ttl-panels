@@ -15,88 +15,83 @@
 
 namespace TTLDebugTools
 {
-	class TTLPanelBase : public GenericProcessor
-	{
-	public:
-		/** Constructor.
+class TTLPanelBase : public GenericProcessor
+{
+public:
+    /** Constructor.
 			Set "wantSource" true to make this a toggle panel (filter), or false for a front panel (sink) */
-		TTLPanelBase(const std::string &name, bool wantSource);
+    TTLPanelBase (const std::string& name, bool wantSource);
 
-		/** Destructor */
-		~TTLPanelBase();
+    /** Destructor */
+    ~TTLPanelBase();
 
-		/** Create custom editor */
-		AudioProcessorEditor* createEditor() override;
+    /** Create custom editor */
+    AudioProcessorEditor* createEditor() override;
 
-		/** Create event channels */
-		void updateSettings() override;
+    /** Create event channels */
+    void updateSettings() override;
 
-		/** Processing loop. */
-		void process(AudioBuffer<float>& buffer) override;
+    /** Processing loop. */
+    void process (AudioBuffer<float>& buffer) override;
 
-		// If we're configured as a front panel, we need to handle events.
-		void handleTTLEvent(TTLEventPtr event) override;
+    // If we're configured as a front panel, we need to handle events.
+    void handleTTLEvent (TTLEventPtr event) override;
 
-		// This is guaranteed to be called under safe conditions.
-		// Variables used by "process" should only be modified here.
-		void parameterValueChanged(Parameter* parameter) override;
+    // This is guaranteed to be called under safe conditions.
+    // Variables used by "process" should only be modified here.
+    void parameterValueChanged (Parameter* parameter) override;
 
-		// Accessors for querying and modifying state.
-		// Modifying is done via parameterValueChanged, since that's guaranteed safe.
-		// NOTE - Calling query accessors while running isn't safe!
-		bool isEventSourcePanel();
+    // Accessors for querying and modifying state.
+    // Modifying is done via parameterValueChanged, since that's guaranteed safe.
+    // NOTE - Calling query accessors while running isn't safe!
+    bool isEventSourcePanel();
 
-		// Updates the display with latest state.
-		void pushStateToDisplay();
+    // Updates the display with latest state.
+    void pushStateToDisplay();
 
-	protected:
-		bool isTTLSource;
-		std::map<uint16, uint32> currentTTLWord;
-		std::map<uint16, uint32> lastTTLWord;
-		std::map<uint16, EventChannel*> localEventChannels;
+protected:
+    bool isTTLSource;
+    std::map<uint16, uint32> currentTTLWord;
+    std::map<uint16, uint32> lastTTLWord;
+    std::map<uint16, EventChannel*> localEventChannels;
 
-	private:
-		JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(TTLPanelBase);
-	};
+private:
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (TTLPanelBase);
+};
 
-	/** 
+/** 
 		Creates an array of buttons to toggle TTL events on and off
 	*/
-	class TTLTogglePanel : public TTLPanelBase
-	{
-	public:
-		
-		/** Constructor */
-		TTLTogglePanel();
-		
-		/** Destructor */
-		~TTLTogglePanel();
+class TTLTogglePanel : public TTLPanelBase
+{
+public:
+    /** Constructor */
+    TTLTogglePanel();
 
-		
-	private:
+    /** Destructor */
+    ~TTLTogglePanel();
 
-		JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(TTLTogglePanel);
-	};
+private:
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (TTLTogglePanel);
+};
 
-	/** 
+/** 
 	
 		Creates an array of indicators to show the state of individual TTL lines
 		
 	*/
-	class TTLFrontPanel : public TTLPanelBase
-	{
-	public:
+class TTLFrontPanel : public TTLPanelBase
+{
+public:
+    /** Constructor */
+    TTLFrontPanel();
 
-		/** Constructor */
-		TTLFrontPanel();
+    /** Destructor*/
+    ~TTLFrontPanel();
 
-		/** Destructor*/
-		~TTLFrontPanel();
-
-		
-	private:
-		JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(TTLFrontPanel);
-	};
-}
+private:
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (TTLFrontPanel);
+};
+} // namespace TTLDebugTools
 
 #endif
