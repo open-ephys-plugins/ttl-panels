@@ -86,7 +86,7 @@ namespace TTLDebugTools
 		TTLPanelBase* parent;
 		OwnedArray<TTLPanelButton> buttons;
 		std::unique_ptr<Label> ttlWordLabel;
-		std::unique_ptr<Label> editableLabel;
+		std::unique_ptr<CustomTextBox> editableLabel;
 		std::unique_ptr<UtilityButton> setButton;
 		std::unique_ptr<UtilityButton> clearButton;
 		std::map<uint16, uint32> currentTTLWord;

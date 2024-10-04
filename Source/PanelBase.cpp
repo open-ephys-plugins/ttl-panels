@@ -15,6 +15,7 @@ TTLPanelBase::TTLPanelBase(const std::string &name, bool wantSource) : GenericPr
 
     addIntParameter(Parameter::STREAM_SCOPE,
 		"ttl_word",
+        "Word",
 		"TTL word for a given stream",
 		0,
 		INT_MIN,
@@ -66,7 +67,7 @@ void TTLPanelBase::updateSettings()
             };
 
             ttlChan = new EventChannel(ttlChannelSettings);
-            ttlChan->addProcessor(processorInfo.get());
+            ttlChan->addProcessor(this);
             eventChannels.add(ttlChan);
 
             localEventChannels[streamId] = eventChannels.getLast();
@@ -98,19 +99,13 @@ void TTLPanelBase::process(AudioSampleBuffer& buffer)
             
             if (currentTTLWord[streamId] != lastTTLWord[streamId])
             {
-                for (int bit = 0; bit < 32; bit++)
-                {
-					if ((currentTTLWord[streamId] & (1 << bit)) != (lastTTLWord[streamId] & (1 << bit)))
-					{
-						// Bit changed, generate event
-                       
-                        TTLEventPtr event = TTLEvent::createTTLEvent(localEventChannels[streamId],
-                            getFirstSampleNumberForBlock(streamId),
-                            bit,
-                            (currentTTLWord[streamId] >> bit) & 1);
+                Array<TTLEventPtr> events = TTLEvent::createTTLEvent (localEventChannels[streamId],
+                                                                      getFirstSampleNumberForBlock(streamId),
+                                                                      static_cast<uint64> (currentTTLWord[streamId]));
 
-                        addEvent(event, 0);
-					}
+                for (auto event : events)
+                {
+                    addEvent(event, 0);
                 }
 
                 lastTTLWord[streamId] = currentTTLWord[streamId];

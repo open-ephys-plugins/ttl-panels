@@ -62,18 +62,18 @@ void TTLPanelButton::paintButton(Graphics& g, bool isHighlighted, bool isDown)
     if (getToggleState())
         g.setColour(colour);
     else
-        g.setColour(Colours::grey);
+        g.setColour(findColour (ThemeColours::widgetBackground));
 
 	
         
     g.fillRect(0, 0, getWidth(), getHeight());
     
-    g.setColour(Colours::black);
-	g.setFont(10.0f);
+    g.setColour(findColour (ThemeColours::defaultText));
+	g.setFont(11.0f);
     g.drawText(String(line + 1), Rectangle<float>(getWidth(), getHeight()), Justification::centred);
 
-    if (isMouseOver())
-        g.setColour(Colours::white);
+    if (isHighlighted && getClickingTogglesState())
+        g.setColour(colour);
 
     g.drawLine(0, getHeight(), getWidth(), getHeight(), 2.0);
 
@@ -126,28 +126,33 @@ TTLPanelBaseEditor::TTLPanelBaseEditor(TTLPanelBase* newParent) : GenericEditor(
 
     setDesiredWidth(260);
 
-    editableLabel = std::make_unique<Label>("TTL Word", "0");
-    editableLabel->setFont(Font("CP Mono", "Plain", 11));
-    editableLabel->setColour(Label::textColourId, Colours::white);
-    editableLabel->setColour(Label::backgroundColourId, Colours::grey);
-    editableLabel->setBounds(205, 40, 50, 18);
+    editableLabel = std::make_unique<CustomTextBox>("TTL Word", "0", "0123456789", "");
+    editableLabel->setFont(FontOptions("CP Mono", "Plain", 14.0f));
+    editableLabel->setBounds(205, 50, 50, 18);
     addAndMakeVisible(editableLabel.get());
+    editableLabel->onTextChange = [this] { editableLabel->setTooltip (editableLabel->getText());};
+
+    ttlWordLabel = std::make_unique<Label>("Word Label", "Word");
+    ttlWordLabel->setFont(FontOptions("Inter", "Regular", 14.0f));
+    ttlWordLabel->setSize (50, 18);
+    ttlWordLabel->attachToComponent (editableLabel.get(), false);
+    addAndMakeVisible(ttlWordLabel.get());
 
     if (parent->isEventSourcePanel())
     {
 
         editableLabel->setEditable(true);
         
-        setButton = std::make_unique<UtilityButton>("set", titleFont);
+        setButton = std::make_unique<UtilityButton>("Set");
         setButton->addListener(this);
         setButton->setRadius(3.0f);
-        setButton->setBounds(210, 64, 40, 18);
+        setButton->setBounds(210, 75, 40, 18);
         addAndMakeVisible(setButton.get());
 
-        clearButton = std::make_unique<UtilityButton>("clear", titleFont);
+        clearButton = std::make_unique<UtilityButton>("Clear");
         clearButton->addListener(this);
         clearButton->setRadius(3.0f);
-        clearButton->setBounds(210, 100, 40, 18);
+        clearButton->setBounds(210, 98, 40, 18);
         addAndMakeVisible(clearButton.get());
     }
     
@@ -202,7 +207,7 @@ void TTLPanelBaseEditor::buttonClicked(Button* button)
         {
             int64 valueI64 = int64(currentTTLWord[getCurrentStream()]);
             int converted = int(valueI64 - INT_MAX);
-            ttlWordParam->setNextValue(var(converted));
+            ttlWordParam->setNextValue(var(converted), false);
         }
         else {
             LOGD("No parameter found.");
@@ -220,7 +225,7 @@ void TTLPanelBaseEditor::buttonClicked(Button* button)
         {
             int64 valueI64 = int64(currentTTLWord[getCurrentStream()]);
             int converted = int(valueI64 - INT_MAX);
-            ttlWordParam->setNextValue(var(converted));
+            ttlWordParam->setNextValue(var(converted), false);
         }
         else {
             LOGD("No parameter found.");
@@ -243,7 +248,7 @@ void TTLPanelBaseEditor::buttonClicked(Button* button)
 			{
 				int64 valueI64 = int64(currentTTLWord[getCurrentStream()]);
 				int converted = int(valueI64 - INT_MAX);
-				ttlWordParam->setNextValue(var(converted));
+				ttlWordParam->setNextValue(var(converted), false);
 			}
 			else {
 				LOGD("No parameter found.");
