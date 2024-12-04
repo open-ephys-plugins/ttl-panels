@@ -10,21 +10,24 @@ using namespace TTLDebugTools;
 TTLPanelBase::TTLPanelBase (const std::string& name, bool wantSource) : GenericProcessor (name)
 {
     isTTLSource = wantSource;
-
-    addIntParameter (Parameter::STREAM_SCOPE,
-                     "ttl_word",
-                     "Word",
-                     "TTL word for a given stream",
-                     0,
-                     INT_MIN,
-                     INT_MAX,
-                     false);
 }
 
 // Destructor.
 TTLPanelBase::~TTLPanelBase()
 {
     // Nothing to do.
+}
+
+void TTLPanelBase::registerParameters()
+{
+    addIntParameter (Parameter::STREAM_SCOPE,
+                    "ttl_word",
+                    "Word",
+                    "TTL word for a given stream",
+                    0,
+                    INT_MIN,
+                    INT_MAX,
+                    false); 
 }
 
 // Editor accessor.

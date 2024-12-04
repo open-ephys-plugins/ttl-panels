@@ -25,6 +25,9 @@ public:
     /** Destructor */
     ~TTLPanelBase();
 
+    /** Register parameters */
+    void registerParameters() override;
+
     /** Create custom editor */
     AudioProcessorEditor* createEditor() override;
 
