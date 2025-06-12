@@ -20,14 +20,17 @@ TTLPanelBase::~TTLPanelBase()
 
 void TTLPanelBase::registerParameters()
 {
-    addIntParameter (Parameter::STREAM_SCOPE,
-                    "ttl_word",
-                    "Word",
-                    "TTL word for a given stream",
-                    0,
-                    INT_MIN,
-                    INT_MAX,
-                    false); 
+    if (isTTLSource)
+    {
+        addIntParameter (Parameter::STREAM_SCOPE,
+                         "ttl_word",
+                         "Word",
+                         "TTL word for a given stream",
+                         0,
+                         INT_MIN,
+                         INT_MAX,
+                         false);
+    }
 }
 
 // Editor accessor.
@@ -136,6 +139,29 @@ void TTLPanelBase::pushStateToDisplay()
     editor->pushStateToEditor (currentTTLWord);
 }
 
+void TTLPanelBase::setParameter (int index, float newValue)
+{
+    DataStream* stream = nullptr;
+
+    if (dataStreams.size() > 0)
+    {
+        if (editor != nullptr)
+            stream = getDataStream (editor->getCurrentStream());
+        else
+            stream = getDataStream (0); // Default to first stream if no editor.
+    }
+    else
+    {
+        return;
+    }
+
+    if (auto* ttlWordParam = stream->getParameter ("ttl_word"))
+    {
+        ttlWordParam->updateValue();
+        parameterValueChanged (ttlWordParam);
+    }
+}
+
 // Parameter accessor. This is guaranteed to be called under safe conditions.
 // Variables used by "process" should only be modified here.
 void TTLPanelBase::parameterValueChanged (Parameter* parameter)
@@ -146,14 +172,12 @@ void TTLPanelBase::parameterValueChanged (Parameter* parameter)
     int64 valueI64 = int64 (parameter->getValue());
     uint32 valueU32 = uint32 (valueI64 + INT_MAX);
 
-    LOGD ("New TTL word for stream ", streamId, ": ", valueU32);
+    CoreServices::sendStatusMessage ("Set " + getName() + " " + parameter->getDisplayName() + ": " + String (valueU32));
 
     currentTTLWord[streamId] = valueU32;
-}
 
-// Accessors for querying and modifying state.
-// Modifying is done via setParameter, since that's guaranteed safe.
-// NOTE - We're not calling query accessors any more!
+    pushStateToDisplay();
+}
 
 bool TTLPanelBase::isEventSourcePanel()
 {

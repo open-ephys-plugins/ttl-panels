@@ -175,6 +175,9 @@ void TTLPanelBaseEditor::selectedStreamHasChanged()
 
 void TTLPanelBaseEditor::buttonClicked (Button* button)
 {
+    if (! parent->isEventSourcePanel())
+        return;
+
     if (buttons.contains ((TTLPanelButton*) button))
     {
         TTLPanelButton* panelButton = (TTLPanelButton*) button;
@@ -224,7 +227,7 @@ void TTLPanelBaseEditor::buttonClicked (Button* button)
     {
         int candidateValue = editableLabel->getText().getIntValue();
 
-        if (candidateValue >= 0 && candidateValue < INT_MAX)
+        if (candidateValue >= 0 && candidateValue <= INT_MAX)
         {
             currentTTLWord[getCurrentStream()] = candidateValue;
 
@@ -252,7 +255,13 @@ void TTLPanelBaseEditor::buttonClicked (Button* button)
 
 IntParameter* TTLPanelBaseEditor::getTTLWordParameter()
 {
-    return (IntParameter*) parent->getDataStream (getCurrentStream())->getParameter ("ttl_word");
+    if (auto* stream = parent->getDataStream (getCurrentStream()))
+    {
+        // Get the TTL word parameter for the current stream.
+        return (IntParameter*) stream->getParameter ("ttl_word");
+    }
+
+    return nullptr;
 }
 
 // Timer callback.
@@ -265,6 +274,11 @@ void TTLPanelBaseEditor::timerCallback()
 void TTLPanelBaseEditor::pushStateToEditor (std::map<uint16, uint32> currentTTLWord_)
 {
     currentTTLWord = currentTTLWord_;
+
+    if (parent->isEventSourcePanel())
+    {
+        redrawAllButtons();
+    }
 }
 
 // Redraw function. Should be called from the timer, not the plugin.
@@ -282,6 +296,7 @@ void TTLPanelBaseEditor::redrawAllButtons()
     }
 
     editableLabel->setText (String (currentTTLWord[getCurrentStream()]), dontSendNotification);
+    editableLabel->setTooltip (editableLabel->getText());
 }
 
 //

@@ -40,6 +40,9 @@ public:
     // If we're configured as a front panel, we need to handle events.
     void handleTTLEvent (TTLEventPtr event) override;
 
+    // Triggers parameter value changes in a audio thread-safe manner.
+    void setParameter (int index, float newValue) override;
+
     // This is guaranteed to be called under safe conditions.
     // Variables used by "process" should only be modified here.
     void parameterValueChanged (Parameter* parameter) override;
