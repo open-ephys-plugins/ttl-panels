@@ -74,9 +74,23 @@ void TTLPanelBase::updateSettings()
 
         currentTTLWord[streamId] = 0;
         lastTTLWord[streamId] = 0;
+
+        if (isTTLSource)
+            parameterValueChanged (stream->getParameter ("ttl_word"));
     }
 
     pushStateToDisplay();
+}
+
+bool TTLPanelBase::stopAcquisition()
+{
+    // Reset the last TTL word.
+    for (auto& pair : lastTTLWord)
+    {
+        pair.second = 0;
+    }
+
+    return true; // Indicate that acquisition was stopped successfully.
 }
 
 // Processing loop.
@@ -113,8 +127,6 @@ void TTLPanelBase::process (AudioSampleBuffer& buffer)
     {
         // We're a sink.
         checkForEvents();
-
-        pushStateToDisplay();
     }
 }
 
@@ -129,6 +141,8 @@ void TTLPanelBase::handleTTLEvent (TTLEventPtr event)
         currentTTLWord[streamId] |= (1 << ttlBit);
     else
         currentTTLWord[streamId] &= ~(1 << ttlBit);
+
+    pushStateToDisplay();
 }
 
 // Pushes latest state to display
@@ -159,6 +173,7 @@ void TTLPanelBase::setParameter (int index, float newValue)
     {
         ttlWordParam->updateValue();
         parameterValueChanged (ttlWordParam);
+        CoreServices::sendStatusMessage ("Set " + getName() + " " + ttlWordParam->getDisplayName() + ": " + String (currentTTLWord[stream->getStreamId()]));
     }
 }
 
@@ -166,13 +181,11 @@ void TTLPanelBase::setParameter (int index, float newValue)
 // Variables used by "process" should only be modified here.
 void TTLPanelBase::parameterValueChanged (Parameter* parameter)
 {
-    LOGD ("Parameter value changed!");
+    LOGD ("Parameter value changed for ", parameter->getName());
     const uint16 streamId = parameter->getStreamId();
 
     int64 valueI64 = int64 (parameter->getValue());
     uint32 valueU32 = uint32 (valueI64 + INT_MAX);
-
-    CoreServices::sendStatusMessage ("Set " + getName() + " " + parameter->getDisplayName() + ": " + String (valueU32));
 
     currentTTLWord[streamId] = valueU32;
 

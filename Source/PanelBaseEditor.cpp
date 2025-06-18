@@ -166,6 +166,12 @@ void TTLPanelBaseEditor::stopAcquisition()
     {
         stopTimer();
     }
+
+    for (auto stream : parent->getDataStreams())
+    {
+        // Reset the TTL word for each stream.
+        currentTTLWord[stream->getStreamId()] = 0;
+    }
 }
 
 void TTLPanelBaseEditor::selectedStreamHasChanged()

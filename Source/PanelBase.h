@@ -34,6 +34,9 @@ public:
     /** Create event channels */
     void updateSettings() override;
 
+    /** Resets last TTL word */
+    bool stopAcquisition() override;
+
     /** Processing loop. */
     void process (AudioBuffer<float>& buffer) override;
 
