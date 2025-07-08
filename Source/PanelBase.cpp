@@ -26,7 +26,7 @@ void TTLPanelBase::registerParameters()
                          "ttl_word",
                          "Word",
                          "TTL word for a given stream",
-                         0,
+                         INT_MIN + 1,
                          INT_MIN,
                          INT_MAX,
                          false);
